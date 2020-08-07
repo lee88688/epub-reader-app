@@ -6,6 +6,7 @@ import {
 } from 'react-router-dom';
 import Login from './views/login';
 import Bookshelf from './views/bookshelf';
+import Reader from './views/reader';
 
 function App() {
   return (
@@ -16,6 +17,9 @@ function App() {
         </Route>
         <Route path="/bookshelf">
           <Bookshelf />
+        </Route>
+        <Route path="/reader">
+          <Reader />
         </Route>
       </Switch>
     </Router>

@@ -1,26 +1,48 @@
 import React, { useState } from 'react';
-import Container from '@material-ui/core/Container';
-import Divider from '@material-ui/core/Divider';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import PropTypes from 'prop-types';
+import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import Typography from '@material-ui/core/Typography';
 import { Hidden } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
-import useTheme from '@material-ui/core/styles/useTheme';
+import Container from '@material-ui/core/Container';
 import makeStyles from '@material-ui/core/styles/makeStyles';
+import Box from '@material-ui/core/Box';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import SwipeableViews from 'react-swipeable-views';
+import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 
-const drawerWidth = 240;
+function TabPanel(props) {
+  const { children, value, index } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`full-width-tabpanel-${index}`}
+      aria-labelledby={`full-width-tab-${index}`}
+    >
+      {value === index && (
+        <Box p={3}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-  },
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired,
+};
+
+const drawerWidth = 340;
+
+const useStyles = makeStyles(theme => ({
+  root: { display: 'flex', flexDirection: 'row-reverse' },
   drawer: {
     [theme.breakpoints.up('sm')]: {
       width: drawerWidth,
@@ -30,13 +52,7 @@ const useStyles = makeStyles((theme) => ({
   appBar: {
     [theme.breakpoints.up('sm')]: {
       width: `calc(100% - ${drawerWidth}px)`,
-      marginLeft: drawerWidth,
-    },
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-    [theme.breakpoints.up('sm')]: {
-      display: 'none',
+      marginRight: drawerWidth,
     },
   },
   // necessary for content to be below app bar
@@ -50,49 +66,53 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Bookshelf() {
+export default function Reader() {
   const classes = useStyles();
-  const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const container = window !== undefined ? () => window.document.body : undefined;
+
   const drawer = (
     <div>
-      <List>
-        <ListItem>
-          <Typography variant="h5">Lithium</Typography>
-        </ListItem>
-        <ListItem button>
-          <ListItemText primary="我的书籍"/>
-        </ListItem>
-      </List>
-      <Divider />
-      <List subheader={<ListSubheader>分类</ListSubheader>}>
-        <ListItem button>
-          <ListItemText primary="创建分类"/>
-        </ListItem>
-      </List>
+      <AppBar position="static" color="default">
+        <Tabs
+          value={tabIndex}
+          onChange={(_, index) => setTabIndex(index)}
+          indicatorColor="primary"
+          textColor="primary"
+          variant="fullWidth"
+        >
+          <Tab label="目录" />
+          <Tab label="备注" />
+          <Tab label="书签" />
+        </Tabs>
+      </AppBar>
+      <SwipeableViews
+        index={tabIndex}
+        onChangeIndex={index => setTabIndex(index)}
+      >
+        <TabPanel value={tabIndex} index={0}>
+          Item One
+        </TabPanel>
+        <TabPanel value={tabIndex} index={1}>
+          Item Two
+        </TabPanel>
+        <TabPanel value={tabIndex} index={2}>
+          Item Three
+        </TabPanel>
+      </SwipeableViews>
     </div>
   );
 
-  const container = window !== undefined ? () => window.document.body : undefined;
-
   return (
-    <Container className={classes.root}>
+    <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            className={classes.menuButton}
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography variant="h6" noWrap>
             Responsive drawer
           </Typography>
@@ -101,12 +121,13 @@ export default function Bookshelf() {
       <nav className={classes.drawer} aria-label="mailbox folders">
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Hidden smUp implementation="css">
-          <Drawer
+          <SwipeableDrawer
             container={container}
             variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+            anchor="right"
             open={mobileOpen}
-            onClose={handleDrawerToggle}
+            onClose={() => setMobileOpen(false)}
+            onOpen={() => setMobileOpen(true)}
             classes={{
               paper: classes.drawerPaper,
             }}
@@ -115,13 +136,14 @@ export default function Bookshelf() {
             }}
           >
             {drawer}
-          </Drawer>
+          </SwipeableDrawer>
         </Hidden>
         <Hidden xsDown implementation="css">
           <Drawer
             classes={{
               paper: classes.drawerPaper,
             }}
+            anchor="right"
             variant="permanent"
             open
           >
@@ -144,6 +166,6 @@ export default function Bookshelf() {
           donec massa sapien faucibus et molestie ac.
         </Typography>
       </main>
-    </Container>
+    </div>
   );
 }

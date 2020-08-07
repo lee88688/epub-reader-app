@@ -13,10 +13,12 @@
     "eslint-plugin-react-hooks": "^4.0.8",
     "fontsource-roboto": "^3.0.3",
     "node-sass": "^4.14.1",
+    "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "react-swipeable-views": "^0.13.9"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -41,7 +43,11 @@
         "error",
         "single"
       ],
-      "jsx-quotes": "error"
+      "jsx-quotes": "error",
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ]
     }
   },
   "browserslist": {
