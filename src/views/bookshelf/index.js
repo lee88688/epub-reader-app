@@ -14,6 +14,58 @@ import { Hidden } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 import useTheme from '@material-ui/core/styles/useTheme';
 import makeStyles from '@material-ui/core/styles/makeStyles';
+import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
+import Mock from 'mockjs';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+
+const useGridStyles = makeStyles(theme => ({
+  root: {
+  },
+  gridItem: {
+
+  },
+  tile: {
+    cursor: 'pointer',
+    // position: 'relative'
+  },
+  img: {
+    display: 'block',
+    transform: 'none'
+  }
+}));
+
+function useBookList() {
+  const tileData = Mock.mock({ 'data|5': [{ title: '@sentence', subtitle: '@word' }] }).data;
+  const classes = useGridStyles();
+
+  const gridList = (
+    <Grid container spacing={2}>
+      {tileData.map((tile) => (
+        <Grid item key={tile.title}>
+          <Paper elevation={2}>
+            <GridListTile
+              component="div"
+              classes={{
+                root: classes.tile
+              }}
+            >
+              <img src="https://via.placeholder.com/180" alt={tile.title} className={classes.img} />
+              <GridListTileBar
+                title={tile.title}
+                subtitle={tile.subtitle}
+              />
+            </GridListTile>
+          </Paper>
+        </Grid>
+      ))}
+    </Grid>
+  );
+  return {
+    gridList
+  };
+}
 
 const drawerWidth = 240;
 
@@ -54,6 +106,7 @@ export default function Bookshelf() {
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { gridList } = useBookList();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -131,18 +184,7 @@ export default function Bookshelf() {
       </nav>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <Typography paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-          ut labore et dolore magna aliqua. Rhoncus dolor purus non enim praesent elementum
-          facilisis leo vel. Risus at ultrices mi tempus imperdiet. Semper risus in hendrerit
-          gravida rutrum quisque non tellus. Convallis convallis tellus id interdum velit laoreet id
-          donec ultrices. Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl suscipit
-          adipiscing bibendum est ultricies integer quis. Cursus euismod quis viverra nibh cras.
-          Metus vulputate eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo quis
-          imperdiet massa tincidunt. Cras tincidunt lobortis feugiat vivamus at augue. At augue eget
-          arcu dictum varius duis at consectetur lorem. Velit sed ullamcorper morbi tincidunt. Lorem
-          donec massa sapien faucibus et molestie ac.
-        </Typography>
+        {gridList}
       </main>
     </Container>
   );

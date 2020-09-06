@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import Link from '@material-ui/core/Link';
-// import {Container, Typography, TextField, FormControlLabel, Checkbox} from "@material-ui/core";
-import {makeStyles} from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import { login } from '../../api/user';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -32,6 +33,16 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Login() {
   const classes = useStyles();
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const history = useHistory();
+
+  const loginClick = async () => {
+    setLoading(true);
+    await login({ email, password });
+    history.push('/bookshelf');
+  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -44,6 +55,8 @@ export default function Login() {
         </Typography>
         <form className={classes.form} noValidate>
           <TextField
+            value={email}
+            onInput={e => setEmail(e.target.value)}
             variant="outlined"
             margin="normal"
             required
@@ -53,8 +66,11 @@ export default function Login() {
             name="email"
             autoComplete="email"
             autoFocus
+            disabled={loading}
           />
           <TextField
+            value={password}
+            onInput={e => setPassword(e.target.value)}
             variant="outlined"
             margin="normal"
             required
@@ -64,6 +80,7 @@ export default function Login() {
             type="password"
             id="password"
             autoComplete="current-password"
+            disabled={loading}
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
@@ -75,6 +92,8 @@ export default function Login() {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={loading}
+            onClick={loginClick}
           >
             Sign In
           </Button>
