@@ -19,31 +19,58 @@ import GridListTileBar from '@material-ui/core/GridListTileBar';
 import Mock from 'mockjs';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import AddIcon from '@material-ui/icons/Add';
+import BookIcon from '@material-ui/icons/Book';
+import LabelIcon from '@material-ui/icons/Label';
 
 const useGridStyles = makeStyles(theme => ({
   root: {
   },
   gridItem: {
-
+    width: '180px',
+    height: '280px',
+    '& > *': {
+      height: '100%'
+    }
+  },
+  addPaper: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'rgba(0, 0, 0, 0.2)',
+    cursor: 'pointer'
   },
   tile: {
     cursor: 'pointer',
+    height: '100%'
     // position: 'relative'
   },
-  img: {
-    display: 'block',
-    transform: 'none'
+  imgFullWidth: {
+    // display: 'block',
+    transform: 'none',
+    top: '5px',
+    left: '0',
+    maxWidth: '100%',
+    height: 'auto',
+    maxHeight: '100%'
   }
 }));
 
+const tileData = Mock.mock({ 'data|0': [{ title: '@sentence', subtitle: '@word' }] }).data;
+
 function useBookList() {
-  const tileData = Mock.mock({ 'data|5': [{ title: '@sentence', subtitle: '@word' }] }).data;
   const classes = useGridStyles();
 
   const gridList = (
     <Grid container spacing={2}>
+      <Grid item className={classes.gridItem} key="add-button">
+        <Paper classes={{ root: classes.addPaper }} elevation={2}>
+          <AddIcon fontSize="large" />
+        </Paper>
+      </Grid>
       {tileData.map((tile) => (
-        <Grid item key={tile.title}>
+        <Grid item className={classes.gridItem} key={tile.title}>
           <Paper elevation={2}>
             <GridListTile
               component="div"
@@ -51,7 +78,7 @@ function useBookList() {
                 root: classes.tile
               }}
             >
-              <img src="https://via.placeholder.com/180" alt={tile.title} className={classes.img} />
+              <img src="https://source.unsplash.com/700x700/?nature,water,2" alt={tile.title} />
               <GridListTileBar
                 title={tile.title}
                 subtitle={tile.subtitle}
@@ -67,17 +94,99 @@ function useBookList() {
   };
 }
 
-const drawerWidth = 240;
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-  },
+const useDrawerStyles = makeStyles(theme => ({
   drawer: {
     [theme.breakpoints.up('sm')]: {
       width: drawerWidth,
       flexShrink: 0,
     },
+  },
+  drawerPaper: {
+    width: drawerWidth,
+  }
+}));
+
+function useDrawer() {
+  const theme = useTheme();
+  const classes = useDrawerStyles();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const container = window !== undefined ? () => window.document.body : undefined;
+
+  const drawer = (
+    <div>
+      <List>
+        <ListItem>
+          <Typography variant="h5">Lithium</Typography>
+        </ListItem>
+        <ListItem button>
+          <ListItemIcon><BookIcon /></ListItemIcon>
+          <ListItemText primary="我的书籍"/>
+        </ListItem>
+        <ListItem button>
+          <ListItemIcon><LabelIcon /></ListItemIcon>
+          <ListItemText primary="分类"/>
+        </ListItem>
+      </List>
+      <Divider />
+      <List subheader={<ListSubheader>分类</ListSubheader>}>
+        <ListItem button>
+          <ListItemIcon><AddIcon /></ListItemIcon>
+          <ListItemText primary="创建分类"/>
+        </ListItem>
+      </List>
+    </div>
+  );
+
+  const drawerItem = (
+    <nav className={classes.drawer} aria-label="mailbox folders">
+      {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+      <Hidden mdUp implementation="css">
+        <Drawer
+          container={container}
+          variant="temporary"
+          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          classes={{
+            paper: classes.drawerPaper,
+          }}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+        >
+          {drawer}
+        </Drawer>
+      </Hidden>
+      <Hidden xsDown implementation="css">
+        <Drawer
+          classes={{
+            paper: classes.drawerPaper,
+          }}
+          variant="permanent"
+          open
+        >
+          {drawer}
+        </Drawer>
+      </Hidden>
+    </nav>
+  );
+
+  return {
+    handleDrawerToggle,
+    drawerItem
+  };
+}
+
+const drawerWidth = 240;
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
   },
   appBar: {
     [theme.breakpoints.up('sm')]: {
@@ -93,9 +202,6 @@ const useStyles = makeStyles((theme) => ({
   },
   // necessary for content to be below app bar
   toolbar: theme.mixins.toolbar,
-  drawerPaper: {
-    width: drawerWidth,
-  },
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
@@ -104,34 +210,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Bookshelf() {
   const classes = useStyles();
-  const theme = useTheme();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const { gridList } = useBookList();
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const drawer = (
-    <div>
-      <List>
-        <ListItem>
-          <Typography variant="h5">Lithium</Typography>
-        </ListItem>
-        <ListItem button>
-          <ListItemText primary="我的书籍"/>
-        </ListItem>
-      </List>
-      <Divider />
-      <List subheader={<ListSubheader>分类</ListSubheader>}>
-        <ListItem button>
-          <ListItemText primary="创建分类"/>
-        </ListItem>
-      </List>
-    </div>
-  );
-
-  const container = window !== undefined ? () => window.document.body : undefined;
+  const { handleDrawerToggle, drawerItem } = useDrawer();
 
   return (
     <Container className={classes.root}>
@@ -151,37 +231,7 @@ export default function Bookshelf() {
           </Typography>
         </Toolbar>
       </AppBar>
-      <nav className={classes.drawer} aria-label="mailbox folders">
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-        <Hidden smUp implementation="css">
-          <Drawer
-            container={container}
-            variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
-            }}
-          >
-            {drawer}
-          </Drawer>
-        </Hidden>
-        <Hidden xsDown implementation="css">
-          <Drawer
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            variant="permanent"
-            open
-          >
-            {drawer}
-          </Drawer>
-        </Hidden>
-      </nav>
+      { drawerItem }
       <main className={classes.content}>
         <div className={classes.toolbar} />
         {gridList}
