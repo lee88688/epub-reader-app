@@ -23,13 +23,24 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import AddIcon from '@material-ui/icons/Add';
 import BookIcon from '@material-ui/icons/Book';
 import LabelIcon from '@material-ui/icons/Label';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
 
 const useGridStyles = makeStyles(theme => ({
   root: {
+    justifyContent: 'center',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, 150px)'
   },
   gridItem: {
-    width: '180px',
-    height: '280px',
+    // width: '180px',
+    // height: '280px',
+    width: '150px',
+    height: '240px',
     '& > *': {
       height: '100%'
     }
@@ -40,6 +51,9 @@ const useGridStyles = makeStyles(theme => ({
     alignItems: 'center',
     color: 'rgba(0, 0, 0, 0.2)',
     cursor: 'pointer'
+  },
+  addInput: {
+    display: 'none'
   },
   tile: {
     cursor: 'pointer',
@@ -57,16 +71,17 @@ const useGridStyles = makeStyles(theme => ({
   }
 }));
 
-const tileData = Mock.mock({ 'data|0': [{ title: '@sentence', subtitle: '@word' }] }).data;
+const tileData = Mock.mock({ 'data|10': [{ title: '@sentence', subtitle: '@word' }] }).data;
 
 function useBookList() {
   const classes = useGridStyles();
 
   const gridList = (
-    <Grid container spacing={2}>
+    <Grid container className={classes.root} justify="center" spacing={2}>
       <Grid item className={classes.gridItem} key="add-button">
         <Paper classes={{ root: classes.addPaper }} elevation={2}>
           <AddIcon fontSize="large" />
+          <input className={classes.addInput} />
         </Paper>
       </Grid>
       {tileData.map((tile) => (
@@ -103,6 +118,9 @@ const useDrawerStyles = makeStyles(theme => ({
   },
   drawerPaper: {
     width: drawerWidth,
+  },
+  dialogPaper: {
+    minWidth: '300px'
   }
 }));
 
@@ -110,6 +128,8 @@ function useDrawer() {
   const theme = useTheme();
   const classes = useDrawerStyles();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [categoryDialog, setCategoryDialog] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -134,12 +154,42 @@ function useDrawer() {
       </List>
       <Divider />
       <List subheader={<ListSubheader>分类</ListSubheader>}>
-        <ListItem button>
+        <ListItem button onClick={() => {
+          setCategoryDialog(true);
+          setMobileOpen(false);
+        }}>
           <ListItemIcon><AddIcon /></ListItemIcon>
           <ListItemText primary="创建分类"/>
         </ListItem>
       </List>
     </div>
+  );
+
+  const createCategory = () => {
+    setCategoryDialog(false);
+    setCategoryName('');
+  };
+
+  const addCategoryDialog = (
+    <Dialog open={categoryDialog} classes={{ paper: classes.dialogPaper }}>
+      <DialogTitle>添加类别</DialogTitle>
+      <DialogContent>
+        <TextField
+          value={categoryName}
+          onInput={e => setCategoryDialog(e.target.value)}
+          autoFocus
+          label="输入类别名称"
+          fullWidth
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button color="primary" onClick={() => {
+          setCategoryName('');
+          setCategoryDialog(false);
+        }}>取消</Button>
+        <Button color="primary" onClick={createCategory}>创建</Button>
+      </DialogActions>
+    </Dialog>
   );
 
   const drawerItem = (
@@ -173,6 +223,7 @@ function useDrawer() {
           {drawer}
         </Drawer>
       </Hidden>
+      { addCategoryDialog }
     </nav>
   );
 
@@ -204,7 +255,7 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
-    padding: theme.spacing(3),
+    padding: `${theme.spacing(3)}px 0`,
   },
 }));
 
