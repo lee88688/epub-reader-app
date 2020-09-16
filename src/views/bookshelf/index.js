@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
@@ -77,6 +78,7 @@ function useBookList() {
   const [books, setBooks] = useState([]);
   const classes = useGridStyles();
   const addInputRef = useRef(null);
+  const history = useHistory();
 
   useEffect(() => {
     getBooks();
@@ -85,6 +87,15 @@ function useBookList() {
   const getBooks = async () => {
     const { data } = await apiGetBooks();
     setBooks(data || []);
+  };
+
+  const bookClick = (book, content) => {
+    return () => {
+      const query = new URLSearchParams();
+      query.set('book', book);
+      query.set('content', content);
+      history.push(`/reader?${query.toString()}`);
+    };
   };
 
   const inputChange = async () => {
@@ -110,7 +121,7 @@ function useBookList() {
         </Paper>
       </Grid>
       {books.map((book) => (
-        <Grid item className={classes.gridItem} key={book._id}>
+        <Grid onClick={bookClick(book.fileName, book.contentPath)} item className={classes.gridItem} key={book._id}>
           <Paper elevation={2}>
             <GridListTile
               component="div"

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
@@ -11,6 +12,8 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import { useReader } from './epubReader';
+import { useQuery } from '../../hooks';
+import { getFileUrl } from '../../api/file';
 
 function TabPanel(props) {
   const { children, value, index } = props;
@@ -54,7 +57,7 @@ const useDrawerStyles = makeStyles(theme => ({
   }
 }));
 
-function useDawer() {
+function useDrawer() {
   const [tabIndex, setTabIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const classes = useDrawerStyles();
@@ -158,8 +161,10 @@ const useStyles = makeStyles(theme => ({
 
 export default function Reader() {
   const classes = useStyles();
-  const book = useReader({ opfUrl: '' });
-  const drawer = useDawer();
+  const drawer = useDrawer();
+  const query = useQuery();
+  const contentUrl = getFileUrl(query.get('book'), query.get('content'));
+  const book = useReader({ opfUrl: contentUrl });
 
   return (
     <div className={classes.root}>

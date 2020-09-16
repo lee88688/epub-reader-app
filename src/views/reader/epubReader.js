@@ -7,7 +7,7 @@ export function useReader({ opfUrl }) {
   useEffect(() => {
     const viewer = document.querySelector('#viewer');
     console.log(viewer.clientHeight);
-    const book = ePub('https://s3.amazonaws.com/epubjs/books/moby-dick/OPS/package.opf');
+    const book = ePub(opfUrl);
     rendition.current = book.renderTo('viewer', {
       manager: 'continuous',
       flow: 'paginated',
@@ -15,7 +15,7 @@ export function useReader({ opfUrl }) {
       height: '100%',
       snap: true
     });
-    rendition.current.display('chapter_001.xhtml');
+    rendition.current.display(1);
   }, [opfUrl]);
 
   return (
