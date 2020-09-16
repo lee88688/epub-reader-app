@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import PropTypes, { func } from 'prop-types';
+import PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -10,7 +10,7 @@ import Box from '@material-ui/core/Box';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
-import { useReader } from './EpubReader';
+import { useReader } from './epubReader';
 
 function TabPanel(props) {
   const { children, value, index } = props;
