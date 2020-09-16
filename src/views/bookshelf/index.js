@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
@@ -16,7 +16,6 @@ import useTheme from '@material-ui/core/styles/useTheme';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import GridListTile from '@material-ui/core/GridListTile';
 import GridListTileBar from '@material-ui/core/GridListTileBar';
-import Mock from 'mockjs';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -29,6 +28,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import { apiGetBooks, getFileUrl, uploadBook } from '../../api/file';
 
 const useGridStyles = makeStyles(theme => ({
   root: {
@@ -71,21 +71,46 @@ const useGridStyles = makeStyles(theme => ({
   }
 }));
 
-const tileData = Mock.mock({ 'data|10': [{ title: '@sentence', subtitle: '@word' }] }).data;
+// const tileData = Mock.mock({ 'data|10': [{ title: '@sentence', subtitle: '@word' }] }).data;
 
 function useBookList() {
+  const [books, setBooks] = useState([]);
   const classes = useGridStyles();
+  const addInputRef = useRef(null);
+
+  useEffect(() => {
+    getBooks();
+  }, []);
+
+  const getBooks = async () => {
+    const { data } = await apiGetBooks();
+    setBooks(data || []);
+  };
+
+  const inputChange = async () => {
+    console.log('input file change');
+    const [file] = addInputRef.current.files;
+    if (!file) return;
+    await uploadBook(file);
+    console.log('successful upload');
+  };
 
   const gridList = (
     <Grid container className={classes.root} justify="center" spacing={2}>
-      <Grid item className={classes.gridItem} key="add-button">
+      <Grid onClick={() => addInputRef.current.click()} item className={classes.gridItem} key="add-button">
         <Paper classes={{ root: classes.addPaper }} elevation={2}>
           <AddIcon fontSize="large" />
-          <input className={classes.addInput} />
+          <input
+            ref={addInputRef}
+            onChange={inputChange}
+            type="file"
+            accept="application/epub+zip"
+            className={classes.addInput}
+          />
         </Paper>
       </Grid>
-      {tileData.map((tile) => (
-        <Grid item className={classes.gridItem} key={tile.title}>
+      {books.map((book) => (
+        <Grid item className={classes.gridItem} key={book._id}>
           <Paper elevation={2}>
             <GridListTile
               component="div"
@@ -93,10 +118,10 @@ function useBookList() {
                 root: classes.tile
               }}
             >
-              <img src="https://source.unsplash.com/700x700/?nature,water,2" alt={tile.title} />
+              <img src={getFileUrl(book.fileName, book.cover)} alt={book.cover} />
               <GridListTileBar
-                title={tile.title}
-                subtitle={tile.subtitle}
+                title={book.title}
+                subtitle={book.author}
               />
             </GridListTile>
           </Paper>
