@@ -6,7 +6,7 @@ export function useReader({ opfUrl }) {
 
   useEffect(() => {
     const viewer = document.querySelector('#viewer');
-    console.log(viewer.clientHeight);
+    // console.log(viewer.clientHeight);
     const book = ePub(opfUrl);
     rendition.current = book.renderTo('viewer', {
       manager: 'continuous',
@@ -16,9 +16,28 @@ export function useReader({ opfUrl }) {
       snap: true
     });
     rendition.current.display(1);
+
+    let cfi = null;
+    rendition.current.on('selected', function(cfiRange, contents) {
+      if (!cfi) {
+        const fn = () => {
+          contents.document.removeEventListener('mouseup', fn);
+          rendition.current.annotations.highlight(cfi, {}, e => console.log('click'), '', { fill: 'blue' });
+          cfi = null;
+        };
+        contents.document.addEventListener('mouseup', fn);
+      }
+      cfi = cfiRange;
+    });
   }, [opfUrl]);
 
-  return (
+  const bookItem = (
     <div id="viewer" style={{ 'height': '100%', width: '100%' }}></div>
   );
+
+  return {
+    bookItem,
+    nextPage: () => rendition.current ? rendition.current.next() : null,
+    prevPage: () => rendition.current ? rendition.current.prev() : null
+  };
 }

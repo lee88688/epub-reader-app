@@ -6,6 +6,8 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import { Hidden } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
+import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import Box from '@material-ui/core/Box';
 import Tabs from '@material-ui/core/Tabs';
@@ -14,6 +16,7 @@ import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import { useReader } from './epubReader';
 import { useQuery } from '../../hooks';
 import { getFileUrl } from '../../api/file';
+import clsx from 'clsx';
 
 function TabPanel(props) {
   const { children, value, index } = props;
@@ -140,6 +143,7 @@ const useStyles = makeStyles(theme => ({
   shim: theme.mixins.toolbar,
   main: {
     display: 'flex',
+    position: 'relative',
     flexDirection: 'column',
     height: '100vh',
     'max-height': '100%',
@@ -156,6 +160,22 @@ const useStyles = makeStyles(theme => ({
   },
   content: {
     flexGrow: 1
+  },
+  pageIcon: {
+    display: 'none',
+    cursor: 'pointer',
+    position: 'absolute',
+    top: '50%',
+    fontSize: '2rem',
+    [theme.breakpoints.up(viewBreakPoint)]: {
+      display: 'block'
+    }
+  },
+  next: {
+    right: `${theme.spacing(2)}px`
+  },
+  prev: {
+    left: `${theme.spacing(2)}px`
   }
 }));
 
@@ -164,7 +184,7 @@ export default function Reader() {
   const drawer = useDrawer();
   const query = useQuery();
   const contentUrl = getFileUrl(query.get('book'), query.get('content'));
-  const book = useReader({ opfUrl: contentUrl });
+  const { bookItem, nextPage, prevPage } = useReader({ opfUrl: contentUrl });
 
   return (
     <div className={classes.root}>
@@ -179,8 +199,10 @@ export default function Reader() {
       <main className={classes.main}>
         <div className={classes.shim} />
         <div className={classes.content}>
-          { book }
+          { bookItem }
         </div>
+        <ArrowBackIosIcon onClick={prevPage} className={clsx(classes.pageIcon, classes.prev)} />
+        <ArrowForwardIosIcon onClick={nextPage} className={clsx(classes.pageIcon, classes.next)} />
       </main>
     </div>
   );

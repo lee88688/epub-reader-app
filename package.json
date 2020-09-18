@@ -9,6 +9,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "axios": "^0.19.2",
+    "clsx": "^1.1.1",
     "epubjs": "^0.3.88",
     "eslint-plugin-react-hooks": "^4.0.8",
     "fontsource-roboto": "^3.0.3",
