@@ -37,6 +37,7 @@ export function useReader({ opfUrl }) {
 
   return {
     bookItem,
+    rendition,
     nextPage: () => rendition.current ? rendition.current.next() : null,
     prevPage: () => rendition.current ? rendition.current.prev() : null
   };

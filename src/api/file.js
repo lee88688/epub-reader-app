@@ -23,3 +23,10 @@ export function apiGetBooks() {
 export function getFileUrl(fileName, path) {
   return `/book-file/${fileName}/${path}`;
 }
+
+export function getBookToc(book) {
+  return request({
+    url: `/api/book/toc/${book}`,
+    method: 'GET'
+  });
+}

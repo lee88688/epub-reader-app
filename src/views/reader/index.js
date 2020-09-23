@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
@@ -15,8 +15,9 @@ import Tab from '@material-ui/core/Tab';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import { useReader } from './epubReader';
 import { useQuery } from '../../hooks';
-import { getFileUrl } from '../../api/file';
+import { getBookToc, getFileUrl } from '../../api/file';
 import clsx from 'clsx';
+import NestedList from './NestedList';
 
 function TabPanel(props) {
   const { children, value, index } = props;
@@ -28,7 +29,7 @@ function TabPanel(props) {
       aria-labelledby={`full-width-tab-${index}`}
     >
       {value === index && (
-        <Box p={3}>
+        <Box p={0}>
           <Typography>{children}</Typography>
         </Box>
       )}
@@ -60,10 +61,18 @@ const useDrawerStyles = makeStyles(theme => ({
   }
 }));
 
-function useDrawer() {
+function useDrawer(book, onClick) {
   const [tabIndex, setTabIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [tocData, setTocData ] = useState([]);
   const classes = useDrawerStyles();
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await getBookToc(book);
+      setTocData(data);
+    })();
+  }, [book]);
 
   const container = window !== undefined ? () => window.document.body : undefined;
 
@@ -83,7 +92,7 @@ function useDrawer() {
         </Tabs>
       </AppBar>
       <TabPanel value={tabIndex} index={0}>
-        Item One
+        <NestedList data={tocData} onClick={onClick} />
       </TabPanel>
       <TabPanel value={tabIndex} index={1}>
         Item Two
@@ -181,10 +190,14 @@ const useStyles = makeStyles(theme => ({
 
 export default function Reader() {
   const classes = useStyles();
-  const drawer = useDrawer();
   const query = useQuery();
   const contentUrl = getFileUrl(query.get('book'), query.get('content'));
-  const { bookItem, nextPage, prevPage } = useReader({ opfUrl: contentUrl });
+  const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl });
+  const clickToc = ({ src }) => {
+    if (!src) return;
+    rendition.current.display(src);
+  };
+  const drawer = useDrawer(query.get('book'), clickToc);
 
   return (
     <div className={classes.root}>
