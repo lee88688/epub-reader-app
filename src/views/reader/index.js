@@ -106,7 +106,7 @@ function useDrawer(book, onClick) {
   return (
     <nav className={classes.drawer} aria-label="mailbox folders">
       {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-      <Hidden smUp implementation="css">
+      <Hidden smUp>
         <SwipeableDrawer
           container={container}
           variant="temporary"
@@ -124,7 +124,7 @@ function useDrawer(book, onClick) {
           {drawer}
         </SwipeableDrawer>
       </Hidden>
-      <Hidden xsDown implementation="css">
+      <Hidden xsDown>
         <Drawer
           classes={{
             paper: classes.drawerPaper,

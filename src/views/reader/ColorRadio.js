@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Radio from '@material-ui/core/Radio';
 import { makeStyles } from '@material-ui/core/styles';
@@ -27,12 +27,20 @@ export default function ColorRadio(props) {
   const { color = 'red', ...otherProps } = props;
   const classes = useStyles();
 
+  const checkedIcon = useMemo(() => (
+    <span className={clsx(classes.icon, classes.checkedIcon)} style={{ color }} />
+  ), [color]);
+
+  const icon = useMemo(() => (
+    <span className={classes.icon} style={{ color }} />
+  ), [color]);
+
   return (
     <Radio
       color="default"
       className={classes.root}
-      checkedIcon={<span className={clsx(classes.icon, classes.checkedIcon)} style={{ color }} />}
-      icon={<span className={classes.icon} style={{ color }} />}
+      checkedIcon={checkedIcon}
+      icon={icon}
       { ...otherProps}
     />
   );
