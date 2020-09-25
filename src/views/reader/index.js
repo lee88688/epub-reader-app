@@ -1,144 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import { Hidden } from '@material-ui/core';
-import Drawer from '@material-ui/core/Drawer';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import makeStyles from '@material-ui/core/styles/makeStyles';
-import Box from '@material-ui/core/Box';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import { useReader } from './epubReader';
 import { useQuery } from '../../hooks';
-import { getBookToc, getFileUrl } from '../../api/file';
+import { getFileUrl } from '../../api/file';
 import clsx from 'clsx';
-import NestedList from './NestedList';
-
-function TabPanel(props) {
-  const { children, value, index } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-    >
-      {value === index && (
-        <Box p={0}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired,
-};
-
-const drawerWidth = 340;
-const viewBreakPoint = 'sm';
-
-const useDrawerStyles = makeStyles(theme => ({
-  drawer: {
-    [theme.breakpoints.up(viewBreakPoint)]: {
-      width: drawerWidth,
-      flexShrink: 0,
-    },
-  },
-  drawerPaper: {
-    width: drawerWidth,
-  },
-  tab: {
-    minWidth: 0
-  }
-}));
-
-function useDrawer(book, onClick) {
-  const [tabIndex, setTabIndex] = useState(0);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [tocData, setTocData ] = useState([]);
-  const classes = useDrawerStyles();
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await getBookToc(book);
-      setTocData(data);
-    })();
-  }, [book]);
-
-  const container = window !== undefined ? () => window.document.body : undefined;
-
-  const drawer = (
-    <div>
-      <AppBar position="static" color="default">
-        <Tabs
-          value={tabIndex}
-          onChange={(_, index) => setTabIndex(index)}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
-        >
-          <Tab label="目录" classes={{ root: classes.tab }} />
-          <Tab label="备注" classes={{ root: classes.tab }} />
-          <Tab label="书签" classes={{ root: classes.tab }} />
-        </Tabs>
-      </AppBar>
-      <TabPanel value={tabIndex} index={0}>
-        <NestedList data={tocData} onClick={onClick} />
-      </TabPanel>
-      <TabPanel value={tabIndex} index={1}>
-        Item Two
-      </TabPanel>
-      <TabPanel value={tabIndex} index={2}>
-        Item Three
-      </TabPanel>
-    </div>
-  );
-
-  return (
-    <nav className={classes.drawer} aria-label="mailbox folders">
-      {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-      <Hidden smUp>
-        <SwipeableDrawer
-          container={container}
-          variant="temporary"
-          anchor="right"
-          open={mobileOpen}
-          onClose={() => setMobileOpen(false)}
-          onOpen={() => setMobileOpen(true)}
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-        >
-          {drawer}
-        </SwipeableDrawer>
-      </Hidden>
-      <Hidden xsDown>
-        <Drawer
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-          anchor="right"
-          variant="permanent"
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Hidden>
-    </nav>
-  );
-}
+import ReaderDrawer, { drawerWidth, viewBreakPoint } from './ReaderDrawer';
 
 const useStyles = makeStyles(theme => ({
   root: { display: 'flex', flexDirection: 'row-reverse' },
@@ -193,11 +66,18 @@ export default function Reader() {
   const query = useQuery();
   const contentUrl = getFileUrl(query.get('book'), query.get('content'));
   const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl });
-  const clickToc = ({ src }) => {
-    if (!src) return;
-    rendition.current.display(src);
-  };
-  const drawer = useDrawer(query.get('book'), clickToc);
+  const clickToc = useMemo(() => {
+    console.log('clickToc');
+    return ({ src }) => {
+      if (!src) return;
+      rendition.current.display(src);
+    };
+  }, [rendition]);
+
+  const bookFileName = query.get('book');
+  const drawer = useMemo(() => (
+    <ReaderDrawer book={query.get('book')} onClick={clickToc} />
+  ), [bookFileName, clickToc]);
 
   return (
     <div className={classes.root}>
