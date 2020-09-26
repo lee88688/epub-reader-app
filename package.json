@@ -37,6 +37,8 @@
       "plugin:react-hooks/recommended"
     ],
     "rules": {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
       "semi": "error",
       "comma-spacing": "error",
       "prefer-const": "error",

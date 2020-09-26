@@ -29,7 +29,8 @@ export function useReader({ opfUrl }) {
       flow: 'paginated',
       width: '100%',
       height: '100%',
-      snap: true
+      snap: true,
+      script: '/epubjs-ext/rendition-injection.js'
     });
     rendition.current.display(0);
 
@@ -46,6 +47,11 @@ export function useReader({ opfUrl }) {
             { color, text },
             e => {
               // new add highlight callback
+              // void touchstart trigger
+              if (e.type.startsWith('touch')) {
+                e.stopPropagation();
+                return;
+              }
               const g = document.querySelector(`g[data-epubcfi="${cfi}"]`);
               const editorValue = {};
               Object.keys(g.dataset).forEach(k => editorValue[k] = g.dataset[k]);
@@ -71,13 +77,8 @@ export function useReader({ opfUrl }) {
     if (openPopover && curEditorValue.epubcfi) {
       // find the highlight element and compare with the color before. if not the same, change element's color.
       updateHighlightElement(curEditorValue);
-      // const g = document.querySelector(`g[data-epubcfi="${curEditorValue.epubcfi}"]`);
-      // const preColor = g.dataset.color;
-      // if (preColor !== curEditorValue.color) {
-      //   g.dataset.color = curEditorValue.color;
-      //   g.setAttribute('fill', getColorsValue(curEditorValue.color));
-      // }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [curEditorValue.color]);
 
   const handleEditorChange = value => setCurEditorValue(value);
