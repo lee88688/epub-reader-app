@@ -1,6 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import React, { useMemo } from 'react';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -64,10 +62,13 @@ const useStyles = makeStyles(theme => ({
 export default function Reader() {
   const classes = useStyles();
   const query = useQuery();
+  const id = query.get('id');
+  const title = query.get('title');
   const contentUrl = getFileUrl(query.get('book'), query.get('content'));
-  const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl });
+  const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl, bookId: id });
+  // useMemo for performance reason
   const clickToc = useMemo(() => {
-    console.log('clickToc');
+    // console.log('clickToc');
     return ({ src }) => {
       if (!src) return;
       rendition.current.display(src);
@@ -75,20 +76,17 @@ export default function Reader() {
   }, [rendition]);
 
   const bookFileName = query.get('book');
-  const drawer = useMemo(() => (
-    <ReaderDrawer book={query.get('book')} onClick={clickToc} />
-  ), [bookFileName, clickToc]);
 
   return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
           <Typography variant="h6" noWrap>
-            Responsive drawer
+            { title }
           </Typography>
         </Toolbar>
       </AppBar>
-      { drawer }
+      <ReaderDrawer id={id} book={bookFileName} onClick={clickToc} />
       <main className={classes.main}>
         <div className={classes.shim} />
         <div className={classes.content}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@material-ui/core/Box';
 import makeStyles from '@material-ui/core/styles/makeStyles';
@@ -11,6 +11,7 @@ import { Hidden } from '@material-ui/core';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Drawer from '@material-ui/core/Drawer';
 import { useRendered } from '../../hooks';
+import HighlightList from './HighlightList';
 
 function TabPanel(props) {
   const { children, value, index, className } = props;
@@ -73,7 +74,7 @@ const useDrawerStyles = makeStyles(theme => ({
 }));
 
 export default function ReaderDrawer(props) {
-  const { book, onClick } = props;
+  const { id, book, onClick } = props;
   const [tabIndex, setTabIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [tocData, setTocData ] = useState([]);
@@ -85,6 +86,10 @@ export default function ReaderDrawer(props) {
       setTocData(data);
     })();
   }, [book]);
+
+  const tocItem = useMemo(() => (
+    <NestedList data={tocData} onClick={onClick} />
+  ), [tocData, onClick]);
 
   const container = window !== undefined ? () => window.document.body : undefined;
 
@@ -104,10 +109,10 @@ export default function ReaderDrawer(props) {
         </Tabs>
       </AppBar>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={0}>
-        <NestedList data={tocData} onClick={onClick} />
+        {tocItem}
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={1}>
-        Item Two
+        <HighlightList bookId={id} />
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={2}>
         Item Three
@@ -153,6 +158,7 @@ export default function ReaderDrawer(props) {
 }
 
 ReaderDrawer.propTypes = {
+  id: PropTypes.string,
   book: PropTypes.string,
   onClick: PropTypes.func
 };

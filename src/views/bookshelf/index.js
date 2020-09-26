@@ -89,11 +89,13 @@ function useBookList() {
     setBooks(data || []);
   };
 
-  const bookClick = (book, content) => {
+  const bookClick = (id, book, content, title) => {
     return () => {
       const query = new URLSearchParams();
       query.set('book', book);
       query.set('content', content);
+      query.set('id', id);
+      query.set('title', title);
       history.push(`/reader?${query.toString()}`);
     };
   };
@@ -103,6 +105,7 @@ function useBookList() {
     const [file] = addInputRef.current.files;
     if (!file) return;
     await uploadBook(file);
+    getBooks();
     console.log('successful upload');
   };
 
@@ -121,7 +124,12 @@ function useBookList() {
         </Paper>
       </Grid>
       {books.map((book) => (
-        <Grid onClick={bookClick(book.fileName, book.contentPath)} item className={classes.gridItem} key={book._id}>
+        <Grid
+          key={book._id}
+          onClick={bookClick(book._id, book.fileName, book.contentPath, book.title)}
+          className={classes.gridItem}
+          item
+        >
           <Paper elevation={2}>
             <GridListTile
               component="div"
@@ -314,7 +322,7 @@ export default function Bookshelf() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            Responsive drawer
+            Bookshelf
           </Typography>
         </Toolbar>
       </AppBar>

@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import ePub from 'epubjs';
 import Popover from '@material-ui/core/Popover';
 import HighlightEditor, { getColorsValue } from './HighlightEditor';
+import { addMark, updateMark } from '../../api/mark';
 
-export function useReader({ opfUrl }) {
+export function useReader({ opfUrl, bookId }) {
   const rendition = useRef(null);
   const anchorEl = useRef(null);
   const [openPopover, setOpenPopover] = useState(false);
@@ -35,17 +36,19 @@ export function useReader({ opfUrl }) {
     rendition.current.display(0);
 
     let epubcfi = '';
+    let selectedString = '';
     rendition.current.on('selected', function(cfiRange, contents) {
       if (!epubcfi) {
-        const fn = () => {
+        const fn = async () => {
           contents.document.removeEventListener('mouseup', fn);
           const color ='red';
           const text = '';
           const cfi = epubcfi; // epubcfi will be set to null, save a copy.
+          const curValue = { color, text, epubcfi, selectedString };
           rendition.current.annotations.highlight(
             epubcfi,
-            { color, text },
-            e => {
+            { ...curValue },
+            async e => {
               // new add highlight callback
               // void touchstart trigger
               if (e.type.startsWith('touch')) {
@@ -53,8 +56,9 @@ export function useReader({ opfUrl }) {
                 return;
               }
               const g = document.querySelector(`g[data-epubcfi="${cfi}"]`);
-              const editorValue = {};
+              const editorValue = { ...curEditorValue };
               Object.keys(g.dataset).forEach(k => editorValue[k] = g.dataset[k]);
+              preEditorValue.current = { ...editorValue };
               setCurEditorValue(editorValue);
               anchorEl.current = e.target;
               setOpenPopover(true);
@@ -63,13 +67,19 @@ export function useReader({ opfUrl }) {
             { fill: getColorsValue(color) }
           );
           // preEditorValue would be currently created values.
-          preEditorValue.current = { color, text, epubcfi };
-          setCurEditorValue({ color, text, epubcfi });
+          // preEditorValue.current = { ...curValue };
+          console.log('curValue', curValue);
+          setCurEditorValue({ ...curValue });
+          const { data: markId } = await addMark(bookId, { ...curValue });
+          console.log('curEditorValue', curEditorValue);
+          setCurEditorValue({ ...curValue, id: markId });
           epubcfi = null;
+          selectedString = '';
         };
         contents.document.addEventListener('mouseup', fn);
       }
       epubcfi = cfiRange;
+      selectedString = contents.window.getSelection().toString();
     });
   }, [opfUrl]);
 
@@ -89,7 +99,9 @@ export function useReader({ opfUrl }) {
     setOpenPopover(false);
   };
 
-  const handleConfirm = (value) => {
+  const handleConfirm = async (value) => {
+    const { id } = { ...curEditorValue, ...value };
+    await updateMark(id, bookId, value);
     updateHighlightElement(value, false);
     setOpenPopover(false);
   };

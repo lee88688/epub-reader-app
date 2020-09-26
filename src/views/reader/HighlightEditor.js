@@ -20,8 +20,9 @@ const colors = [
   { label: 'blue-grey', value: '#607D8B' },
 ];
 
+const colorsMap = colors.reduce((acc, { label, value }) => ({ ...acc, [label]: value }), {});
 export function getColorsValue(label) {
-  return colors.find(c => c.label === label).value;
+  return colorsMap[label];
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -80,7 +81,7 @@ export default function HighlightEditor(props) {
         {colorRadios}
       </RadioGroup>
       <Divider />
-      <Input value={text} onChange={onEditChange('text')} fullWidth multiline classes={{ root: classes.input }} placeholder="comments" />
+      <Input value={text} onChange={onEditChange('text')} fullWidth multiline classes={{ root: classes.input }} placeholder="comment" />
       <Divider />
       <div className={classes.actions}>
         <Button key="confirm" color="primary" onClick={() => {
