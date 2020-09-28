@@ -50,22 +50,22 @@ const useStyles = makeStyles((theme) => ({
 export default function HighlightEditor(props) {
   const { onChange, onCancel, onDelete, onConfirm, ...otherProps } = props;
   const classes = useStyles();
-  const [{ color, text }, setEditorContent] = useState({ color: '', text: '' });
+  const [{ color, content }, setEditorContent] = useState({ color: '', content: '' });
 
   useEffect(() => {
-    setEditorContent({ color: props.color, text: props.text });
-  }, [props.color, props.text]);
+    setEditorContent({ color: props.color, content: props.content });
+  }, [props.color, props.content]);
 
   const onEditChange = type => {
     if (type === 'color') {
       return e => {
-        setEditorContent({ color: e.target.value, text });
-        isFunction(onChange) && onChange({ ...otherProps, color: e.target.value, text });
+        setEditorContent({ color: e.target.value, content });
+        isFunction(onChange) && onChange({ ...otherProps, color: e.target.value, content });
       };
     } else if (type === 'text') {
       return e => {
-        setEditorContent({ color, text: e.target.value });
-        isFunction(onChange) && onChange({ ...otherProps, color, text: e.target.value });
+        setEditorContent({ color, content: e.target.value });
+        isFunction(onChange) && onChange({ ...otherProps, color, content: e.target.value });
       };
     }
   };
@@ -81,17 +81,17 @@ export default function HighlightEditor(props) {
         {colorRadios}
       </RadioGroup>
       <Divider />
-      <Input value={text} onChange={onEditChange('text')} fullWidth multiline classes={{ root: classes.input }} placeholder="comment" />
+      <Input value={content} onChange={onEditChange('text')} fullWidth multiline classes={{ root: classes.input }} placeholder="comment" />
       <Divider />
       <div className={classes.actions}>
         <Button key="confirm" color="primary" onClick={() => {
-          isFunction(onConfirm) && onConfirm({ ...props, color, text });
+          isFunction(onConfirm) && onConfirm({ ...props, color, content });
         }}>confirm</Button>
         <Button key="delete" color="secondary" onClick={() => {
-          isFunction(onDelete) && onDelete({ ...props, color, text });
+          isFunction(onDelete) && onDelete({ ...props, color, content });
         }}>delete</Button>
         <Button key="cancel" onClick={() => {
-          isFunction(onCancel) && onCancel({ ...props, color, text });
+          isFunction(onCancel) && onCancel({ ...props, color, content });
         }}>cancel</Button>
       </div>
     </Paper>
@@ -100,7 +100,7 @@ export default function HighlightEditor(props) {
 
 HighlightEditor.propTypes = {
   color: PropTypes.string,
-  text: PropTypes.string,
+  content: PropTypes.string,
   onConfirm: PropTypes.func,
   onDelete: PropTypes.func,
   onCancel: PropTypes.func,

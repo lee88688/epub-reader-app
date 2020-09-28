@@ -12,7 +12,7 @@ export function addMark(book, { type = 'highlight', content = '', epubcfi, color
 export function updateMark(id, book, data) {
   return request({
     url: `/api/mark/${book}/${id}`,
-    method: 'POST',
+    method: 'PUT',
     data
   });
 }

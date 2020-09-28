@@ -8,8 +8,12 @@ export function useReader({ opfUrl, bookId }) {
   const rendition = useRef(null);
   const anchorEl = useRef(null);
   const [openPopover, setOpenPopover] = useState(false);
-  const [curEditorValue, setCurEditorValue] = useState({ color: '', text: '', epubcfi: '' });
+  const [curEditorValue, setCurEditorValue] = useState({ color: '', content: '', epubcfi: '' });
+  const curEditorValueRef = useRef(null);
   const preEditorValue = useRef(curEditorValue);
+
+  // point curEditorValueRef to curEditorValue
+  curEditorValueRef.current = curEditorValue;
 
   const updateHighlightElement = (value, temporarily = true) => {
     const { epubcfi } =value;
@@ -37,14 +41,17 @@ export function useReader({ opfUrl, bookId }) {
 
     let epubcfi = '';
     let selectedString = '';
+    // when registered selected event, all references in selected callback function are frozen
+    // curEditorValue will be changed, and it would not change in selected callback.
+    // so it's important to change `curEditorValue` to `curEditorValueRef`.
     rendition.current.on('selected', function(cfiRange, contents) {
       if (!epubcfi) {
         const fn = async () => {
           contents.document.removeEventListener('mouseup', fn);
           const color ='red';
-          const text = '';
+          const content = '';
           const cfi = epubcfi; // epubcfi will be set to null, save a copy.
-          const curValue = { color, text, epubcfi, selectedString };
+          const curValue = { color, content, epubcfi, selectedString };
           rendition.current.annotations.highlight(
             epubcfi,
             { ...curValue },
@@ -56,8 +63,9 @@ export function useReader({ opfUrl, bookId }) {
                 return;
               }
               const g = document.querySelector(`g[data-epubcfi="${cfi}"]`);
-              const editorValue = { ...curEditorValue };
+              const editorValue = { ...curEditorValueRef.current };
               Object.keys(g.dataset).forEach(k => editorValue[k] = g.dataset[k]);
+              // console.log('editorValue', { ...editorValue });
               preEditorValue.current = { ...editorValue };
               setCurEditorValue(editorValue);
               anchorEl.current = e.target;
@@ -66,12 +74,8 @@ export function useReader({ opfUrl, bookId }) {
             '',
             { fill: getColorsValue(color) }
           );
-          // preEditorValue would be currently created values.
-          // preEditorValue.current = { ...curValue };
-          console.log('curValue', curValue);
           setCurEditorValue({ ...curValue });
           const { data: markId } = await addMark(bookId, { ...curValue });
-          console.log('curEditorValue', curEditorValue);
           setCurEditorValue({ ...curValue, id: markId });
           epubcfi = null;
           selectedString = '';
