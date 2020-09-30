@@ -3,6 +3,8 @@ import ePub from 'epubjs';
 import Popover from '@material-ui/core/Popover';
 import HighlightEditor, { getColorsValue } from './HighlightEditor';
 import { addMark, updateMark } from '../../api/mark';
+import { useDispatch } from 'react-redux';
+import { getHighlightList } from './readerSlice';
 
 export function useReader({ opfUrl, bookId }) {
   const rendition = useRef(null);
@@ -11,6 +13,7 @@ export function useReader({ opfUrl, bookId }) {
   const [curEditorValue, setCurEditorValue] = useState({ color: '', content: '', epubcfi: '' });
   const curEditorValueRef = useRef(null);
   const preEditorValue = useRef(curEditorValue);
+  const dispatch = useDispatch();
 
   // point curEditorValueRef to curEditorValue
   curEditorValueRef.current = curEditorValue;
@@ -76,6 +79,7 @@ export function useReader({ opfUrl, bookId }) {
           );
           setCurEditorValue({ ...curValue });
           const { data: markId } = await addMark(bookId, { ...curValue });
+          dispatch(getHighlightList(bookId)); // update highlight list
           setCurEditorValue({ ...curValue, id: markId });
           epubcfi = null;
           selectedString = '';
@@ -106,6 +110,7 @@ export function useReader({ opfUrl, bookId }) {
   const handleConfirm = async (value) => {
     const { id } = { ...curEditorValue, ...value };
     await updateMark(id, bookId, value);
+    dispatch(getHighlightList(bookId)); // update highlight list
     updateHighlightElement(value, false);
     setOpenPopover(false);
   };

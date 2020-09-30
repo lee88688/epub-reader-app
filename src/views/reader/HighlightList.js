@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
-import { getMarks } from '../../api/mark';
 import Divider from '@material-ui/core/Divider';
 import Box from '@material-ui/core/Box';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import { getColorsValue } from './HighlightEditor';
+import { useDispatch, useSelector } from 'react-redux';
+import { getHighlightList, selectHighlightList } from './readerSlice';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -30,7 +31,6 @@ const useStyles = makeStyles(theme => ({
 function HighlightListItem(props) {
   const { color, selectedString, content } = props;
   const classes = useStyles();
-  console.log(getColorsValue(color));
   return (
     <ListItem button style={{ display: 'block', padding: '0' }}>
       <Box p={1}>
@@ -57,14 +57,12 @@ HighlightListItem.propTypes = {
 export default function HighlightList(props) {
   const { bookId } = props;
   // todo: when bookId is not changed, does this component rendered?
-  const [highlightList, setHighlightList] = useState([]);
+  const highlightList = useSelector(selectHighlightList);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    (async () => {
-      const { data } = await getMarks(bookId);
-      setHighlightList(data);
-    })();
-  }, [bookId]);
+    dispatch(getHighlightList(bookId));
+  }, [bookId, dispatch]);
 
   return (
     <List>{highlightList.map(item => (
