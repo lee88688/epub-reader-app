@@ -17,6 +17,13 @@ export function updateMark(id, book, data) {
   });
 }
 
+export function removeMark(id, book) {
+  return request({
+    url: `/api/mark/${book}/${id}`,
+    method: 'DELETE'
+  });
+}
+
 export function getMarks(book) {
   return request({
     url: `/api/mark/${book}`,

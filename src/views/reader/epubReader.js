@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ePub from 'epubjs';
+import { EpubCFI } from 'epubjs';
 import Popover from '@material-ui/core/Popover';
 import HighlightEditor, { getColorsValue } from './HighlightEditor';
-import { addMark, updateMark } from '../../api/mark';
+import { addMark, removeMark, updateMark } from '../../api/mark';
 import { useDispatch } from 'react-redux';
 import { getHighlightList } from './readerSlice';
+
+window.EpubCFI = EpubCFI;
 
 export function useReader({ opfUrl, bookId }) {
   const rendition = useRef(null);
@@ -54,7 +57,7 @@ export function useReader({ opfUrl, bookId }) {
           const color ='red';
           const content = '';
           const cfi = epubcfi; // epubcfi will be set to null, save a copy.
-          const curValue = { color, content, epubcfi, selectedString };
+          const curValue = { color, content, epubcfi, selectedString, type: 'highlight' };
           rendition.current.annotations.highlight(
             epubcfi,
             { ...curValue },
@@ -68,7 +71,6 @@ export function useReader({ opfUrl, bookId }) {
               const g = document.querySelector(`g[data-epubcfi="${cfi}"]`);
               const editorValue = { ...curEditorValueRef.current };
               Object.keys(g.dataset).forEach(k => editorValue[k] = g.dataset[k]);
-              // console.log('editorValue', { ...editorValue });
               preEditorValue.current = { ...editorValue };
               setCurEditorValue(editorValue);
               anchorEl.current = e.target;
@@ -115,6 +117,14 @@ export function useReader({ opfUrl, bookId }) {
     setOpenPopover(false);
   };
 
+  const handleRemove = async (value) => {
+    const { id, epubcfi, type } = { ...curEditorValue, ...value };
+    await removeMark(id, bookId);
+    dispatch(getHighlightList(bookId)); // update highlight list
+    rendition.current.annotations.remove(new EpubCFI(epubcfi), type);
+    setOpenPopover(false);
+  };
+
   const bookItem = (
     <React.Fragment>
       <div id="viewer" style={{ 'height': '100%', width: '100%' }}></div>
@@ -129,6 +139,7 @@ export function useReader({ opfUrl, bookId }) {
           onChange={handleEditorChange}
           onConfirm={handleConfirm}
           onCancel={handleEditorCancel}
+          onDelete={handleRemove}
         />
       </Popover>
     </React.Fragment>
