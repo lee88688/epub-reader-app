@@ -1,10 +1,13 @@
 import React, { useMemo, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
+import ArrowBack from '@material-ui/icons/ArrowBack';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import { useReader } from './epubReader';
 import { useQuery } from '../../hooks';
@@ -82,12 +85,17 @@ export default function Reader() {
     dispatch(getHighlightList(id));
   }, [id, dispatch]);
 
+  const history = useHistory();
+
   const bookFileName = query.get('book');
 
   return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
+          <IconButton edge="start" color="inherit" onClick={() => history.goBack()}>
+            <ArrowBack />
+          </IconButton>
           <Typography variant="h6" noWrap>
             { title }
           </Typography>

@@ -24,9 +24,10 @@ export function removeMark(id, book) {
   });
 }
 
-export function getMarks(book) {
+export function getMarks(book, type = 'highlight') {
   return request({
     url: `/api/mark/${book}`,
-    method: 'GET'
+    method: 'GET',
+    params: { type }
   });
 }
