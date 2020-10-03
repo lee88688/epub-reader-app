@@ -91,6 +91,7 @@ export function useReader({ opfUrl, bookId }) {
       epubcfi = cfiRange;
       selectedString = contents.window.getSelection().toString();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opfUrl]);
 
   useEffect(() => {

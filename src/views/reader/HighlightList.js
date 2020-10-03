@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
@@ -7,8 +7,8 @@ import Divider from '@material-ui/core/Divider';
 import Box from '@material-ui/core/Box';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import { getColorsValue } from './HighlightEditor';
-import { useDispatch, useSelector } from 'react-redux';
-import { getHighlightList, selectHighlightList } from './readerSlice';
+import { useSelector } from 'react-redux';
+import { selectHighlightList } from './readerSlice';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -31,6 +31,15 @@ const useStyles = makeStyles(theme => ({
 function HighlightListItem(props) {
   const { color, selectedString, content } = props;
   const classes = useStyles();
+  const comment = !content
+    ? null
+    : (
+     <>
+        <Typography variant="caption">comment</Typography>
+        <Typography variant="body1">{content}</Typography>
+      </>
+    );
+
   return (
     <ListItem button style={{ display: 'block', padding: '0' }}>
       <Box p={1}>
@@ -40,8 +49,7 @@ function HighlightListItem(props) {
         </Typography>
         <Typography variant="body1">{selectedString}</Typography>
         <br/>
-        <Typography variant="caption">comment</Typography>
-        <Typography variant="body1">{content}</Typography>
+        {comment}
       </Box>
       <Divider />
     </ListItem>
@@ -55,20 +63,15 @@ HighlightListItem.propTypes = {
 };
 
 export default function HighlightList(props) {
-  const { bookId } = props;
-  // todo: when bookId is not changed, does this component rendered?
   const highlightList = useSelector(selectHighlightList);
-  const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(getHighlightList(bookId));
-  }, [bookId, dispatch]);
-
-  return (
+  const list =  useMemo(() => (
     <List>{highlightList.map(item => (
       <HighlightListItem key={item._id} {...item} />
     ))}</List>
-  );
+  ), [highlightList]);
+
+  return list;
 }
 
 HighlightList.propTypes = {

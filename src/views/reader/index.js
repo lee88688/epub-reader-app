@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -10,6 +11,7 @@ import { useQuery } from '../../hooks';
 import { getFileUrl } from '../../api/file';
 import clsx from 'clsx';
 import ReaderDrawer, { drawerWidth, viewBreakPoint } from './ReaderDrawer';
+import { getHighlightList } from './readerSlice';
 
 const useStyles = makeStyles(theme => ({
   root: { display: 'flex', flexDirection: 'row-reverse' },
@@ -74,6 +76,11 @@ export default function Reader() {
       rendition.current.display(src);
     };
   }, [rendition]);
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getHighlightList(id));
+  }, [id, dispatch]);
 
   const bookFileName = query.get('book');
 
