@@ -12,6 +12,7 @@ import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Drawer from '@material-ui/core/Drawer';
 import { useRendered } from '../../hooks';
 import HighlightList from './HighlightList';
+import BookmarkList from './BookmarkList';
 
 function TabPanel(props) {
   const { children, value, index, className } = props;
@@ -115,7 +116,7 @@ export default function ReaderDrawer(props) {
         <HighlightList bookId={id} />
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={2}>
-        Item Three
+        <BookmarkList />
       </TabPanel>
     </div>
   );

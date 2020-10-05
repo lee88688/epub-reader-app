@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
@@ -9,12 +9,15 @@ import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import makeStyles from '@material-ui/core/styles/makeStyles';
+import clsx from 'clsx';
 import { useReader } from './epubReader';
 import { useQuery } from '../../hooks';
 import { getFileUrl } from '../../api/file';
-import clsx from 'clsx';
 import ReaderDrawer, { drawerWidth, viewBreakPoint } from './ReaderDrawer';
-import { getHighlightList } from './readerSlice';
+import { getMarkList } from './readerSlice';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import MoreVert from '@material-ui/icons/MoreVert';
 
 const useStyles = makeStyles(theme => ({
   root: { display: 'flex', flexDirection: 'row-reverse' },
@@ -23,6 +26,9 @@ const useStyles = makeStyles(theme => ({
       width: `calc(100% - ${drawerWidth}px)`,
       marginRight: drawerWidth,
     },
+  },
+  appBarTitle: {
+    flexGrow: 1
   },
   // necessary for content to be below app bar
   shim: theme.mixins.toolbar,
@@ -71,6 +77,7 @@ export default function Reader() {
   const title = query.get('title');
   const contentUrl = getFileUrl(query.get('book'), query.get('content'));
   const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl, bookId: id });
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   // useMemo for performance reason
   const clickToc = useMemo(() => {
     // console.log('clickToc');
@@ -82,12 +89,15 @@ export default function Reader() {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getHighlightList(id));
+    dispatch(getMarkList(id));
   }, [id, dispatch]);
 
   const history = useHistory();
 
   const bookFileName = query.get('book');
+
+  const menuOpen = e => setMenuAnchorEl(e.currentTarget);
+  const menuClose = () => setMenuAnchorEl(null);
 
   return (
     <div className={classes.root}>
@@ -96,9 +106,20 @@ export default function Reader() {
           <IconButton edge="start" color="inherit" onClick={() => history.goBack()}>
             <ArrowBack />
           </IconButton>
-          <Typography variant="h6" noWrap>
+          <Typography variant="h6" noWrap className={classes.appBarTitle}>
             { title }
           </Typography>
+          <IconButton edge="end" color="inherit" onClick={menuOpen}>
+            <MoreVert />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchorEl}
+            open={Boolean(menuAnchorEl)}
+            onClose={menuClose}
+            keepMounted
+          >
+            <MenuItem>add bookmark</MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
       <ReaderDrawer id={id} book={bookFileName} onClick={clickToc} />
