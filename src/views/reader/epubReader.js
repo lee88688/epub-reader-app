@@ -4,8 +4,8 @@ import { EpubCFI } from 'epubjs';
 import Popover from '@material-ui/core/Popover';
 import HighlightEditor, { getColorsValue } from './HighlightEditor';
 import { addMark, removeMark, updateMark } from '../../api/mark';
-import { useDispatch } from 'react-redux';
-import { getHighlightList } from './readerSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { getHighlightList, selectHighlightList } from './readerSlice';
 
 window.EpubCFI = EpubCFI;
 
@@ -14,6 +14,7 @@ export function useReader({ opfUrl, bookId }) {
   const anchorEl = useRef(null);
   const [openPopover, setOpenPopover] = useState(false);
   const [curEditorValue, setCurEditorValue] = useState({ color: '', content: '', epubcfi: '' });
+  const highlightList = useSelector(selectHighlightList);
   const curEditorValueRef = useRef(null);
   const preEditorValue = useRef(curEditorValue);
   const dispatch = useDispatch();
@@ -29,6 +30,22 @@ export function useReader({ opfUrl, bookId }) {
     if (!temporarily) {
       // change rendition's annotations
     }
+  };
+
+  const getHighlightSelectedFunction = cfi => async e => {
+    // new add highlight callback
+    // void touchstart trigger
+    if (e.type.startsWith('touch')) {
+      e.stopPropagation();
+      return;
+    }
+    const g = document.querySelector(`g[data-epubcfi="${cfi}"]`);
+    const editorValue = { ...curEditorValueRef.current };
+    Object.keys(g.dataset).forEach(k => editorValue[k] = g.dataset[k]);
+    preEditorValue.current = { ...editorValue };
+    setCurEditorValue(editorValue);
+    anchorEl.current = e.target;
+    setOpenPopover(true);
   };
 
   useEffect(() => {
@@ -56,26 +73,12 @@ export function useReader({ opfUrl, bookId }) {
           contents.document.removeEventListener('mouseup', fn);
           const color ='red';
           const content = '';
-          const cfi = epubcfi; // epubcfi will be set to null, save a copy.
+          // const cfi = epubcfi; // epubcfi will be set to null, save a copy.
           const curValue = { color, content, epubcfi, selectedString, type: 'highlight' };
           rendition.current.annotations.highlight(
             epubcfi,
             { ...curValue },
-            async e => {
-              // new add highlight callback
-              // void touchstart trigger
-              if (e.type.startsWith('touch')) {
-                e.stopPropagation();
-                return;
-              }
-              const g = document.querySelector(`g[data-epubcfi="${cfi}"]`);
-              const editorValue = { ...curEditorValueRef.current };
-              Object.keys(g.dataset).forEach(k => editorValue[k] = g.dataset[k]);
-              preEditorValue.current = { ...editorValue };
-              setCurEditorValue(editorValue);
-              anchorEl.current = e.target;
-              setOpenPopover(true);
-            },
+            getHighlightSelectedFunction(epubcfi),
             '',
             { fill: getColorsValue(color) }
           );
@@ -101,6 +104,22 @@ export function useReader({ opfUrl, bookId }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [curEditorValue.color]);
+
+  useEffect(() => {
+    if (!rendition.current || !Array.isArray(highlightList)) return;
+    const { annotations } = rendition.current;
+    if (Object.keys(annotations._annotations).length !== 0) return;
+    highlightList.forEach(item => {
+      const { epubcfi, color } = item;
+      annotations.highlight(
+        epubcfi,
+        { ...item },
+        getHighlightSelectedFunction(epubcfi),
+        '',
+        { fill: getColorsValue(color) }
+      );
+    });
+  }, [highlightList]);
 
   const handleEditorChange = value => setCurEditorValue(value);
 

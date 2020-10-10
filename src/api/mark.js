@@ -24,10 +24,13 @@ export function removeMark(id, book) {
   });
 }
 
-export function getMarks(book, type = 'highlight') {
-  return request({
+export async function getMarks(book, type = 'highlight') {
+  const res = await request({
     url: `/api/mark/${book}`,
     method: 'GET',
     params: { type }
   });
+  // change _id to id
+  res.data = res.data.map(({ _id: id, __v, ...others }) => ({ id, ...others }));
+  return res;
 }
