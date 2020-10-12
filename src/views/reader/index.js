@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
@@ -79,12 +79,17 @@ export default function Reader() {
   const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl, bookId: id });
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   // useMemo for performance reason
-  const clickToc = useMemo(() => {
-    // console.log('clickToc');
-    return ({ src }) => {
-      if (!src) return;
-      rendition.current.display(src);
-    };
+  const clickToc = useCallback(({ src }) => {
+    if (!src) return;
+    rendition.current.display(src);
+  }, [rendition]);
+
+  const clickHighlight = useCallback(({ epubcfi }) => {
+    if (!epubcfi) {
+      console.warn('this highlight does not have epubcfi');
+      return;
+    }
+    rendition.current.display(epubcfi);
   }, [rendition]);
 
   const dispatch = useDispatch();
@@ -122,7 +127,7 @@ export default function Reader() {
           </Menu>
         </Toolbar>
       </AppBar>
-      <ReaderDrawer id={id} book={bookFileName} onClick={clickToc} />
+      <ReaderDrawer book={bookFileName} onClickToc={clickToc} onClickHighlight={clickHighlight} />
       <main className={classes.main}>
         <div className={classes.shim} />
         <div className={classes.content}>

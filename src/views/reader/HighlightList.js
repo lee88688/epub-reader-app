@@ -29,19 +29,19 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function HighlightListItem(props) {
-  const { color, selectedString, content } = props;
+  const { color, selectedString, content, onClick } = props;
   const classes = useStyles();
   const comment = !content
     ? null
     : (
-     <>
+      <>
         <Typography variant="caption">comment</Typography>
         <Typography variant="body1">{content}</Typography>
       </>
     );
 
   return (
-    <ListItem button style={{ display: 'block', padding: '0' }}>
+    <ListItem onClick={() => onClick ? onClick(props) : null } button style={{ display: 'block', padding: '0' }}>
       <Box p={1}>
         <Typography className={classes.title} variant="h6">
           <span className={classes.color} style={{ color: getColorsValue(color) }} />
@@ -59,21 +59,24 @@ function HighlightListItem(props) {
 HighlightListItem.propTypes = {
   color: PropTypes.string,
   selectedString: PropTypes.string,
-  content: PropTypes.string
+  content: PropTypes.string,
+  onClick: PropTypes.func
 };
 
 export default function HighlightList(props) {
   const highlightList = useSelector(selectHighlightList);
+  const { onClick } = props;
 
   const list =  useMemo(() => (
     <List>{highlightList.map(item => (
-      <HighlightListItem key={item._id} {...item} />
+      <HighlightListItem key={item._id} {...item} onClick={onClick} />
     ))}</List>
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [highlightList]);
 
   return list;
 }
 
 HighlightList.propTypes = {
-  bookId: PropTypes.string
+  onClick: PropTypes.func
 };

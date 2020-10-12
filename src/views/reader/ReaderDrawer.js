@@ -75,7 +75,7 @@ const useDrawerStyles = makeStyles(theme => ({
 }));
 
 export default function ReaderDrawer(props) {
-  const { id, book, onClick } = props;
+  const { book, onClickToc, onClickHighlight } = props;
   const [tabIndex, setTabIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [tocData, setTocData ] = useState([]);
@@ -89,8 +89,8 @@ export default function ReaderDrawer(props) {
   }, [book]);
 
   const tocItem = useMemo(() => (
-    <NestedList data={tocData} onClick={onClick} />
-  ), [tocData, onClick]);
+    <NestedList data={tocData} onClick={onClickToc} />
+  ), [tocData, onClickToc]);
 
   const container = window !== undefined ? () => window.document.body : undefined;
 
@@ -113,7 +113,7 @@ export default function ReaderDrawer(props) {
         {tocItem}
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={1}>
-        <HighlightList bookId={id} />
+        <HighlightList onClick={onClickHighlight} />
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={2}>
         <BookmarkList />
@@ -161,5 +161,6 @@ export default function ReaderDrawer(props) {
 ReaderDrawer.propTypes = {
   id: PropTypes.string,
   book: PropTypes.string,
-  onClick: PropTypes.func
+  onClickToc: PropTypes.func,
+  onClickHighlight: PropTypes.func
 };
