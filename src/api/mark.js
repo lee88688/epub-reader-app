@@ -1,7 +1,7 @@
 import request from '../request';
 
 export function addMark(book, { type = 'highlight', content = '', epubcfi, color, ...other } = {}) {
-  if(!epubcfi || !color) throw new Error('epubcfi or color can\'t be empty.');
+  if(!epubcfi) throw new Error('epubcfi can\'t be empty.');
   return request({
     url: `/api/mark/${book}`,
     method: 'POST',

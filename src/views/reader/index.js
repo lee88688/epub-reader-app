@@ -14,10 +14,12 @@ import { useReader } from './epubReader';
 import { useQuery } from '../../hooks';
 import { getFileUrl } from '../../api/file';
 import ReaderDrawer, { drawerWidth, viewBreakPoint } from './ReaderDrawer';
-import { getMarkList } from './readerSlice';
+import { getBookmarkList, getMarkList } from './readerSlice';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVert from '@material-ui/icons/MoreVert';
+import truncate from 'lodash/truncate';
+import { addMark } from '../../api/mark';
 
 const useStyles = makeStyles(theme => ({
   root: { display: 'flex', flexDirection: 'row-reverse' },
@@ -104,6 +106,16 @@ export default function Reader() {
   const menuOpen = e => setMenuAnchorEl(e.currentTarget);
   const menuClose = () => setMenuAnchorEl(null);
 
+  const addBookmark = async () => {
+    const { start, end } = await rendition.current.currentLocation();
+    const range = rendition.current.getRange(start.cfi);
+    menuClose();
+    // console.log(range);
+    // console.log(truncate(range.startContainer.textContent));
+    await addMark(id, { type: 'bookmark', selectedString: truncate(range.startContainer.textContent), epubcfi: start.cfi });
+    dispatch(getBookmarkList(id));
+  };
+
   return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar}>
@@ -123,11 +135,11 @@ export default function Reader() {
             onClose={menuClose}
             keepMounted
           >
-            <MenuItem>add bookmark</MenuItem>
+            <MenuItem onClick={addBookmark}>add bookmark</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
-      <ReaderDrawer book={bookFileName} onClickToc={clickToc} onClickHighlight={clickHighlight} />
+      <ReaderDrawer book={bookFileName} onClickToc={clickToc} onClickHighlight={clickHighlight} onClickBookmark={clickHighlight} />
       <main className={classes.main}>
         <div className={classes.shim} />
         <div className={classes.content}>

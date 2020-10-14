@@ -18,13 +18,13 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function BookmarkListItem(props) {
-  const { title, selectedString } = props;
+  const { title, selectedString, onClick } = props;
   const classes = useStyles();
 
   return (
-    <ListItem button style={{ display: 'block', padding: '0' }}>
+    <ListItem onClick={() => onClick ? onClick(props) : null} button style={{ display: 'block', padding: '0' }}>
       <Box p={1}>
-        <Typography className={classes.title} variant="h6">{title}</Typography>
+        <Typography className={classes.title} variant="h6">title: {title}</Typography>
         <Typography variant="body1">{selectedString}</Typography>
       </Box>
       <Divider />
@@ -34,17 +34,23 @@ function BookmarkListItem(props) {
 
 BookmarkListItem.propTypes = {
   selectedString: PropTypes.string,
-  title: PropTypes.string
+  title: PropTypes.string,
+  onClick: PropTypes.func
 };
 
-export default function BookmarkList() {
+export default function BookmarkList(props) {
+  const { onClick } = props;
   const bookmarkList = useSelector(selectBookmarkList);
 
   const list = useMemo(() => (
     <List>{bookmarkList.map(item => (
-      <BookmarkListItem key={item._id} {...item}/>
+      <BookmarkListItem key={item._id} {...item} onClick={onClick}/>
     ))}</List>
-  ), [bookmarkList]);
+  ), [bookmarkList, onClick]);
 
   return list;
 }
+
+BookmarkList.propTypes = {
+  onClick: PropTypes.func
+};

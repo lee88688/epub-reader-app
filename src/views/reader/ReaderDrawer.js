@@ -75,7 +75,7 @@ const useDrawerStyles = makeStyles(theme => ({
 }));
 
 export default function ReaderDrawer(props) {
-  const { book, onClickToc, onClickHighlight } = props;
+  const { book, onClickToc, onClickHighlight, onClickBookmark } = props;
   const [tabIndex, setTabIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [tocData, setTocData ] = useState([]);
@@ -116,7 +116,7 @@ export default function ReaderDrawer(props) {
         <HighlightList onClick={onClickHighlight} />
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={2}>
-        <BookmarkList />
+        <BookmarkList onClick={onClickBookmark} />
       </TabPanel>
     </div>
   );
@@ -162,5 +162,6 @@ ReaderDrawer.propTypes = {
   id: PropTypes.string,
   book: PropTypes.string,
   onClickToc: PropTypes.func,
-  onClickHighlight: PropTypes.func
+  onClickHighlight: PropTypes.func,
+  onClickBookmark: PropTypes.func
 };
