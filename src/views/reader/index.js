@@ -46,7 +46,7 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
     padding: theme.spacing(3),
     '& $shim': {
-      display: 'none',
+      // display: 'none',
       flexShrink: 0,
       [theme.breakpoints.up(viewBreakPoint)]: {
         display: 'block'
