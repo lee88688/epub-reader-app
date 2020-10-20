@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useContext } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@material-ui/core/Box';
 import makeStyles from '@material-ui/core/styles/makeStyles';
@@ -13,6 +13,7 @@ import Drawer from '@material-ui/core/Drawer';
 import { useRendered } from '../../hooks';
 import HighlightList from './HighlightList';
 import BookmarkList from './BookmarkList';
+import { ReaderContext } from './index';
 
 function TabPanel(props) {
   const { children, value, index, className } = props;
@@ -75,11 +76,27 @@ const useDrawerStyles = makeStyles(theme => ({
 }));
 
 export default function ReaderDrawer(props) {
-  const { book, onClickToc, onClickHighlight, onClickBookmark } = props;
+  const { book } = props;
   const [tabIndex, setTabIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [tocData, setTocData ] = useState([]);
   const classes = useDrawerStyles();
+
+  const { rendition } = useContext(ReaderContext);
+
+  // useMemo for performance reason
+  const clickToc = useCallback(({ src }) => {
+    if (!src) return;
+    rendition.current.display(src);
+  }, [rendition]);
+
+  const clickHighlight = useCallback(({ epubcfi }) => {
+    if (!epubcfi) {
+      console.warn('this highlight does not have epubcfi');
+      return;
+    }
+    rendition.current.display(epubcfi);
+  }, [rendition]);
 
   useEffect(() => {
     (async () => {
@@ -89,8 +106,8 @@ export default function ReaderDrawer(props) {
   }, [book]);
 
   const tocItem = useMemo(() => (
-    <NestedList data={tocData} onClick={onClickToc} />
-  ), [tocData, onClickToc]);
+    <NestedList data={tocData} onClick={clickToc} />
+  ), [tocData, clickToc]);
 
   const container = window !== undefined ? () => window.document.body : undefined;
 
@@ -113,10 +130,10 @@ export default function ReaderDrawer(props) {
         {tocItem}
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={1}>
-        <HighlightList onClick={onClickHighlight} />
+        <HighlightList onClick={clickHighlight} />
       </TabPanel>
       <TabPanel className={classes.tabPanel} value={tabIndex} index={2}>
-        <BookmarkList onClick={onClickBookmark} />
+        <BookmarkList onClick={clickHighlight} />
       </TabPanel>
     </div>
   );
@@ -161,7 +178,7 @@ export default function ReaderDrawer(props) {
 ReaderDrawer.propTypes = {
   id: PropTypes.string,
   book: PropTypes.string,
-  onClickToc: PropTypes.func,
-  onClickHighlight: PropTypes.func,
-  onClickBookmark: PropTypes.func
+  onClickToc: PropTypes.func
+  // onClickHighlight: PropTypes.func,
+  // onClickBookmark: PropTypes.func
 };

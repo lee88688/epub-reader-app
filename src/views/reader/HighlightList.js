@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
@@ -14,6 +14,8 @@ import IconButton from '@material-ui/core/IconButton';
 import MoreVert from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import { ReaderContext } from './index';
+import { EpubCFI } from 'epubjs';
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -35,10 +37,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function HighlightListItem(props) {
-  const { id, book, color, selectedString, content, onClick } = props;
+  const { id, book, epubcfi, type, color, selectedString, content, onClick } = props;
   const classes = useStyles();
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const dispatch = useDispatch();
+  const { rendition } = useContext(ReaderContext);
 
   const menuOpen = e => {
     e.stopPropagation();
@@ -54,6 +57,9 @@ function HighlightListItem(props) {
     setMenuAnchorEl(null);
     await removeMark(id, book);
     dispatch(getHighlightList(book));
+    if (rendition.current) {
+      rendition.current.annotations.remove(new EpubCFI(epubcfi), type);
+    }
   };
 
   const stopRipplePropagation = e => e.stopPropagation();
@@ -99,6 +105,8 @@ function HighlightListItem(props) {
 HighlightListItem.propTypes = {
   id: PropTypes.string,
   book: PropTypes.string,
+  epubcfi: PropTypes.string,
+  type: PropTypes.string,
   color: PropTypes.string,
   selectedString: PropTypes.string,
   content: PropTypes.string,

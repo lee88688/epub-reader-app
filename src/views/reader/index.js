@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
@@ -20,6 +20,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MoreVert from '@material-ui/icons/MoreVert';
 import truncate from 'lodash/truncate';
 import { addMark } from '../../api/mark';
+
+export const ReaderContext = React.createContext({ rendition: {} });
 
 const useStyles = makeStyles(theme => ({
   root: { display: 'flex', flexDirection: 'row-reverse' },
@@ -80,19 +82,10 @@ export default function Reader() {
   const contentUrl = getFileUrl(query.get('book'), query.get('content'));
   const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl, bookId: id });
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
-  // useMemo for performance reason
-  const clickToc = useCallback(({ src }) => {
-    if (!src) return;
-    rendition.current.display(src);
-  }, [rendition]);
 
-  const clickHighlight = useCallback(({ epubcfi }) => {
-    if (!epubcfi) {
-      console.warn('this highlight does not have epubcfi');
-      return;
-    }
-    rendition.current.display(epubcfi);
-  }, [rendition]);
+  const contextValue = useMemo(() => ({
+    rendition
+  }), [rendition]);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -117,37 +110,39 @@ export default function Reader() {
   };
 
   return (
-    <div className={classes.root}>
-      <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => history.goBack()}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" noWrap className={classes.appBarTitle}>
-            { title }
-          </Typography>
-          <IconButton edge="end" color="inherit" onClick={menuOpen}>
-            <MoreVert />
-          </IconButton>
-          <Menu
-            anchorEl={menuAnchorEl}
-            open={Boolean(menuAnchorEl)}
-            onClose={menuClose}
-            keepMounted
-          >
-            <MenuItem onClick={addBookmark}>add bookmark</MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-      <ReaderDrawer book={bookFileName} onClickToc={clickToc} onClickHighlight={clickHighlight} onClickBookmark={clickHighlight} />
-      <main className={classes.main}>
-        <div className={classes.shim} />
-        <div className={classes.content}>
-          { bookItem }
-        </div>
-        <ArrowBackIosIcon onClick={prevPage} className={clsx(classes.pageIcon, classes.prev)} />
-        <ArrowForwardIosIcon onClick={nextPage} className={clsx(classes.pageIcon, classes.next)} />
-      </main>
-    </div>
+    <ReaderContext.Provider value={contextValue}>
+      <div className={classes.root}>
+        <AppBar position="fixed" className={classes.appBar}>
+          <Toolbar>
+            <IconButton edge="start" color="inherit" onClick={() => history.goBack()}>
+              <ArrowBack />
+            </IconButton>
+            <Typography variant="h6" noWrap className={classes.appBarTitle}>
+              { title }
+            </Typography>
+            <IconButton edge="end" color="inherit" onClick={menuOpen}>
+              <MoreVert />
+            </IconButton>
+            <Menu
+              anchorEl={menuAnchorEl}
+              open={Boolean(menuAnchorEl)}
+              onClose={menuClose}
+              keepMounted
+            >
+              <MenuItem onClick={addBookmark}>add bookmark</MenuItem>
+            </Menu>
+          </Toolbar>
+        </AppBar>
+        <ReaderDrawer book={bookFileName} />
+        <main className={classes.main}>
+          <div className={classes.shim} />
+          <div className={classes.content}>
+            { bookItem }
+          </div>
+          <ArrowBackIosIcon onClick={prevPage} className={clsx(classes.pageIcon, classes.prev)} />
+          <ArrowForwardIosIcon onClick={nextPage} className={clsx(classes.pageIcon, classes.next)} />
+        </main>
+      </div>
+    </ReaderContext.Provider>
   );
 }
