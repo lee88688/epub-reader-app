@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
@@ -30,6 +31,92 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { apiGetBooks, getFileUrl, uploadBook } from '../../api/file';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import MoreVert from '@material-ui/icons/MoreVert';
+
+const useGridItemStyles = makeStyles(() => ({
+  gridItem: {
+    // width: '180px',
+    // height: '280px',
+    width: '150px',
+    height: '240px',
+    '& > *': {
+      height: '100%'
+    }
+  },
+  tile: {
+    cursor: 'pointer',
+    height: '100%'
+    // position: 'relative'
+  },
+  paper: {
+    position: 'relative'
+  },
+  menuIcon: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 1
+  }
+}));
+
+function BookShelfItem(props) {
+  const { book, onClick } = props;
+  const classes = useGridItemStyles();
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const menuOpen = e => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
+  };
+  const menuClose = () => setAnchorEl(null);
+
+  return (
+    <Grid
+      className={classes.gridItem}
+      item
+    >
+      <Paper
+        elevation={2}
+        className={classes.paper}
+        onClick={onClick}
+      >
+        <IconButton className={classes.menuIcon} onClick={menuOpen} size="small">
+          <MoreVert />
+        </IconButton>
+        <GridListTile
+          component="div"
+          classes={{
+            root: classes.tile
+          }}
+        >
+          <img src={getFileUrl(book.fileName, book.cover)} alt={`${book.fileName} cover`} />
+          <GridListTileBar
+            title={book.title}
+            subtitle={book.author}
+          />
+        </GridListTile>
+      </Paper>
+      <Menu
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={menuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+        keepMounted
+      >
+        <MenuItem>add to</MenuItem>
+        <MenuItem>delete</MenuItem>
+      </Menu>
+    </Grid>
+  );
+}
+
+BookShelfItem.propTypes = {
+  book: PropTypes.object,
+  onClick: PropTypes.func
+};
 
 const useGridStyles = makeStyles(theme => ({
   root: {
@@ -56,11 +143,6 @@ const useGridStyles = makeStyles(theme => ({
   addInput: {
     display: 'none'
   },
-  tile: {
-    cursor: 'pointer',
-    height: '100%'
-    // position: 'relative'
-  },
   imgFullWidth: {
     // display: 'block',
     transform: 'none',
@@ -71,8 +153,6 @@ const useGridStyles = makeStyles(theme => ({
     maxHeight: '100%'
   }
 }));
-
-// const tileData = Mock.mock({ 'data|10': [{ title: '@sentence', subtitle: '@word' }] }).data;
 
 function useBookList() {
   const [books, setBooks] = useState([]);
@@ -124,27 +204,11 @@ function useBookList() {
         </Paper>
       </Grid>
       {books.map((book) => (
-        <Grid
+        <BookShelfItem
           key={book._id}
+          book={book}
           onClick={bookClick(book._id, book.fileName, book.contentPath, book.title)}
-          className={classes.gridItem}
-          item
-        >
-          <Paper elevation={2}>
-            <GridListTile
-              component="div"
-              classes={{
-                root: classes.tile
-              }}
-            >
-              <img src={getFileUrl(book.fileName, book.cover)} alt={book.cover} />
-              <GridListTileBar
-                title={book.title}
-                subtitle={book.author}
-              />
-            </GridListTile>
-          </Paper>
-        </Grid>
+        />
       ))}
     </Grid>
   );
