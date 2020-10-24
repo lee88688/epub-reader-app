@@ -13,10 +13,11 @@ export function uploadBook(file) {
   });
 }
 
-export function apiGetBooks() {
+export function apiGetBooks(category) {
   return request({
     url: '/api/book',
-    method: 'GET'
+    method: 'GET',
+    params: { category }
   });
 }
 
@@ -28,5 +29,12 @@ export function getBookToc(book) {
   return request({
     url: `/api/book/toc/${book}`,
     method: 'GET'
+  });
+}
+
+export function apiDeleteBook(id) {
+  return request({
+    url: `/api/book/${id}`,
+    method: 'DELETE'
   });
 }

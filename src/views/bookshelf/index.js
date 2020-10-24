@@ -30,10 +30,33 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import { apiGetBooks, getFileUrl, uploadBook } from '../../api/file';
+import { apiDeleteBook, getFileUrl, uploadBook } from '../../api/file';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVert from '@material-ui/icons/MoreVert';
+import { useSnackbar } from 'notistack';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  getBooks,
+  getCategories,
+  selectBooks,
+  selectCategories,
+  selectCategory,
+  setCategory,
+  setCategoryAndGetBooks
+} from './bookshelfSlice';
+import {
+  apiAddBooksToCategory,
+  apiCreateCategory,
+  apiRemoveBooksFromCategory,
+  apiRemoveCategory
+} from '../../api/category';
+
+const BOOK_MENU_TYPE = {
+  ADD_CATEGORY: 'ADD_CATEGORY',
+  REMOVE_FROM_CATEGORY: 'REMOVE_FROM_CATEGORY',
+  REMOVE_BOOK: 'REMOVE_BOOK'
+};
 
 const useGridItemStyles = makeStyles(() => ({
   gridItem: {
@@ -57,7 +80,8 @@ const useGridItemStyles = makeStyles(() => ({
     position: 'absolute',
     top: 0,
     right: 0,
-    zIndex: 1
+    zIndex: 1,
+    color: 'white'
   }
 }));
 
@@ -65,6 +89,7 @@ function BookShelfItem(props) {
   const { book, onClick } = props;
   const classes = useGridItemStyles();
   const [anchorEl, setAnchorEl] = useState(null);
+  const category = useSelector(selectCategory);
 
   const menuOpen = e => {
     e.stopPropagation();
@@ -72,11 +97,13 @@ function BookShelfItem(props) {
   };
   const menuClose = () => setAnchorEl(null);
 
+  const menuClick = (type, id) => () => {
+    menuClose();
+    props.onMenuSelected(type, id);
+  };
+
   return (
-    <Grid
-      className={classes.gridItem}
-      item
-    >
+    <Grid className={classes.gridItem} item>
       <Paper
         elevation={2}
         className={classes.paper}
@@ -106,8 +133,11 @@ function BookShelfItem(props) {
         transformOrigin={{ vertical: 'top', horizontal: 'center' }}
         keepMounted
       >
-        <MenuItem>add to</MenuItem>
-        <MenuItem>delete</MenuItem>
+        <MenuItem onClick={menuClick(BOOK_MENU_TYPE.ADD_CATEGORY, book._id)}>添加到分类</MenuItem>
+        {category && (
+          <MenuItem onClick={menuClick(BOOK_MENU_TYPE.REMOVE_FROM_CATEGORY, book._id)}>从分类中删除</MenuItem>
+        )}
+        <MenuItem onClick={menuClick(BOOK_MENU_TYPE.REMOVE_BOOK, book._id)}>删除书籍</MenuItem>
       </Menu>
     </Grid>
   );
@@ -115,7 +145,8 @@ function BookShelfItem(props) {
 
 BookShelfItem.propTypes = {
   book: PropTypes.object,
-  onClick: PropTypes.func
+  onClick: PropTypes.func,
+  onMenuSelected: PropTypes.func
 };
 
 const useGridStyles = makeStyles(theme => ({
@@ -151,23 +182,30 @@ const useGridStyles = makeStyles(theme => ({
     maxWidth: '100%',
     height: 'auto',
     maxHeight: '100%'
+  },
+  selectDialog: {
+    minWidth: '300px'
   }
 }));
 
 function useBookList() {
-  const [books, setBooks] = useState([]);
   const classes = useGridStyles();
   const addInputRef = useRef(null);
   const history = useHistory();
+  const books = useSelector(selectBooks);
+  const categories = useSelector(selectCategories);
+  const category = useSelector(selectCategory);
+  const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  // select category dialog
+  const [categoryDialog, setsCategoryDialog] = useState(false);
+  const [selectedBooks, setSelectedBooks] = useState([]);
 
   useEffect(() => {
-    getBooks();
-  }, []);
+    dispatch(getBooks());
+  }, [dispatch]);
 
-  const getBooks = async () => {
-    const { data } = await apiGetBooks();
-    setBooks(data || []);
-  };
+  const currentCategories = categories.filter(name => category !== name);
 
   const bookClick = (id, book, content, title) => {
     return () => {
@@ -180,37 +218,91 @@ function useBookList() {
     };
   };
 
+  const bookMenuSelected = async (type, id) => {
+    if (Array.isArray(currentCategories) && currentCategories.length === 0) {
+      enqueueSnackbar('暂无类别，请添加后重试！');
+      return;
+    }
+    switch (type) {
+      case BOOK_MENU_TYPE.ADD_CATEGORY: {
+        setSelectedBooks([...selectedBooks, id]);
+        setsCategoryDialog(true);
+        break;
+      }
+      case BOOK_MENU_TYPE.REMOVE_FROM_CATEGORY: {
+        if (!category) return;
+        await apiRemoveBooksFromCategory(category, [id]);
+        dispatch(getBooks());
+        enqueueSnackbar('移除成功', { variant: 'success' });
+        break;
+      }
+      case BOOK_MENU_TYPE.REMOVE_BOOK: {
+        if (!id) return;
+        await apiDeleteBook(id);
+        dispatch(getBooks());
+        enqueueSnackbar('删除成功', { variant: 'success' });
+      }
+      default: {
+        break;
+      }
+    }
+  };
+
   const inputChange = async () => {
-    console.log('input file change');
+    enqueueSnackbar('start upload');
     const [file] = addInputRef.current.files;
     if (!file) return;
     await uploadBook(file);
-    getBooks();
-    console.log('successful upload');
+    dispatch(getBooks());
+    enqueueSnackbar('successful upload', { variant: 'success' });
   };
 
-  const gridList = (
-    <Grid container className={classes.root} justify="center" spacing={2}>
-      <Grid onClick={() => addInputRef.current.click()} item className={classes.gridItem} key="add-button">
-        <Paper classes={{ root: classes.addPaper }} elevation={2}>
-          <AddIcon fontSize="large" />
-          <input
-            ref={addInputRef}
-            onChange={inputChange}
-            type="file"
-            accept="application/epub+zip"
-            className={classes.addInput}
-          />
-        </Paper>
-      </Grid>
-      {books.map((book) => (
-        <BookShelfItem
-          key={book._id}
-          book={book}
-          onClick={bookClick(book._id, book.fileName, book.contentPath, book.title)}
+  const handleCategorySelected = name => async () => {
+    setsCategoryDialog(false);
+    await apiAddBooksToCategory(name, selectedBooks);
+    setSelectedBooks([]);
+    enqueueSnackbar('添加成功', { variant: 'success' });
+  };
+
+  const addItem = category ? null : (
+    <Grid onClick={() => addInputRef.current.click()} item className={classes.gridItem} key="add-button">
+      <Paper classes={{ root: classes.addPaper }} elevation={2}>
+        <AddIcon fontSize="large" />
+        <input
+          ref={addInputRef}
+          onChange={inputChange}
+          type="file"
+          accept="application/epub+zip"
+          className={classes.addInput}
         />
-      ))}
+      </Paper>
     </Grid>
+  );
+
+  const gridList = (
+    <React.Fragment>
+      <Grid container className={classes.root} justify="center" spacing={2}>
+        {addItem}
+        {books.map((book) => (
+          <BookShelfItem
+            key={book._id}
+            book={book}
+            onClick={bookClick(book._id, book.fileName, book.contentPath, book.title)}
+            onMenuSelected={bookMenuSelected}
+          />
+        ))}
+      </Grid>
+      <Dialog classes={{ paper: classes.selectDialog }} open={categoryDialog} onClose={() => setsCategoryDialog(false)}>
+        <DialogTitle>选择类别</DialogTitle>
+        <List>
+          {currentCategories.map(name => (
+            <ListItem key={name} button onClick={handleCategorySelected(name)}>
+              <ListItemText primary={name}/>
+            </ListItem>
+          ))}
+        </List>
+      </Dialog>
+    </React.Fragment>
   );
   return {
     gridList
@@ -238,9 +330,21 @@ function useDrawer() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoryDialog, setCategoryDialog] = useState(false);
   const [categoryName, setCategoryName] = useState('');
+  const categories = useSelector(selectCategories);
+  const selectedCategory = useSelector(selectCategory);
+  const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    dispatch(getCategories());
+  }, [dispatch]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleCategoryClick = name => () => {
+    dispatch(setCategoryAndGetBooks(name));
   };
 
   const container = window !== undefined ? () => window.document.body : undefined;
@@ -251,17 +355,19 @@ function useDrawer() {
         <ListItem>
           <Typography variant="h5">Lithium</Typography>
         </ListItem>
-        <ListItem button>
+        <ListItem button selected={!selectedCategory} onClick={handleCategoryClick('')}>
           <ListItemIcon><BookIcon /></ListItemIcon>
           <ListItemText primary="我的书籍"/>
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon><LabelIcon /></ListItemIcon>
-          <ListItemText primary="分类"/>
         </ListItem>
       </List>
       <Divider />
       <List subheader={<ListSubheader>分类</ListSubheader>}>
+        {categories.map(name => (
+          <ListItem button key={name} onClick={handleCategoryClick(name)} selected={name === selectedCategory}>
+            <ListItemIcon><LabelIcon /></ListItemIcon>
+            <ListItemText primary={name}/>
+          </ListItem>
+        ))}
         <ListItem button onClick={() => {
           setCategoryDialog(true);
           setMobileOpen(false);
@@ -273,9 +379,12 @@ function useDrawer() {
     </div>
   );
 
-  const createCategory = () => {
+  const createCategory = async () => {
     setCategoryDialog(false);
+    await apiCreateCategory(categoryName);
     setCategoryName('');
+    dispatch(getCategories());
+    enqueueSnackbar('successful created', { variant: 'success' });
   };
 
   const addCategoryDialog = (
@@ -284,7 +393,7 @@ function useDrawer() {
       <DialogContent>
         <TextField
           value={categoryName}
-          onInput={e => setCategoryDialog(e.target.value)}
+          onInput={e => setCategoryName(e.target.value)}
           autoFocus
           label="输入类别名称"
           fullWidth
@@ -353,12 +462,16 @@ const useStyles = makeStyles((theme) => ({
       marginLeft: drawerWidth,
     },
   },
-  menuButton: {
+  sidebarButton: {
     marginRight: theme.spacing(2),
     [theme.breakpoints.up('sm')]: {
       display: 'none',
     },
   },
+  appBarTitle: {
+    flexGrow: 1
+  },
+  menuButton: {},
   // necessary for content to be below app bar
   toolbar: theme.mixins.toolbar,
   content: {
@@ -371,6 +484,31 @@ export default function Bookshelf() {
   const classes = useStyles();
   const { gridList } = useBookList();
   const { handleDrawerToggle, drawerItem } = useDrawer();
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const selectedCategory = useSelector(selectCategory);
+  const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const menuClose = () => setMenuAnchor(null);
+  const menuOpen = e => setMenuAnchor(e.currentTarget);
+  const handleRemoveCategory = async () => {
+    menuClose();
+    await apiRemoveCategory(selectedCategory);
+    dispatch(setCategoryAndGetBooks(null));
+    dispatch(getCategories());
+    enqueueSnackbar('删除成功', { variant: 'success' });
+  };
+
+  const menuButton = !selectedCategory ? null : (
+    <IconButton
+      color="inherit"
+      aria-label="open menu"
+      edge="end"
+      onClick={menuOpen}
+    >
+      <MoreVert />
+    </IconButton>
+  );
 
   return (
     <Container className={classes.root}>
@@ -381,13 +519,17 @@ export default function Bookshelf() {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            className={classes.menuButton}
+            className={classes.sidebarButton}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
+          <Typography className={classes.appBarTitle} variant="h6" noWrap>
             Bookshelf
           </Typography>
+          {menuButton}
+          <Menu open={Boolean(menuAnchor)} anchorEl={menuAnchor} onClose={menuClose}>
+            <MenuItem onClick={handleRemoveCategory}>删除类别</MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
       { drawerItem }
