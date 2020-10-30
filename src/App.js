@@ -8,6 +8,7 @@ import { SnackbarProvider } from 'notistack';
 import Login from './views/login';
 import Bookshelf from './views/bookshelf';
 import Reader from './views/reader';
+import Notifier from './views/Notifier';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         horizontal: 'center',
       }}
     >
+      <Notifier />
       <Router>
         <Switch>
           <Route path="/login">

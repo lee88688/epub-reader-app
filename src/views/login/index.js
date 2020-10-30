@@ -9,6 +9,8 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 import { login } from '../../api/user';
 
 const useStyles = makeStyles((theme) => ({
@@ -33,16 +35,22 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Login() {
   const classes = useStyles();
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const history = useHistory();
 
-  const loginClick = async () => {
-    setLoading(true);
-    await login({ email, password });
-    history.push('/bookshelf');
-  };
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: ''
+    },
+    validationSchema: yup.object().shape({
+      email: yup.string().email().required(),
+      password: yup.string().required()
+    }),
+    async onSubmit({ email, password }) {
+      await login({ email, password });
+      history.push('/bookshelf');
+    }
+  });
 
   return (
     <Container component="main" maxWidth="xs">
@@ -55,22 +63,27 @@ export default function Login() {
         </Typography>
         <form className={classes.form} noValidate>
           <TextField
-            value={email}
-            onInput={e => setEmail(e.target.value)}
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={Boolean(formik.errors.email) && formik.touched.email}
+            helperText={formik.touched.email && formik.errors.email}
             variant="outlined"
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="Email Address"
             name="email"
+            label="Email Address"
             autoComplete="email"
             autoFocus
-            disabled={loading}
+            disabled={formik.isSubmitting}
           />
           <TextField
-            value={password}
-            onInput={e => setPassword(e.target.value)}
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={Boolean(formik.errors.password) && formik.touched.password}
+            helperText={formik.touched.password && formik.errors.password}
             variant="outlined"
             margin="normal"
             required
@@ -80,7 +93,7 @@ export default function Login() {
             type="password"
             id="password"
             autoComplete="current-password"
-            disabled={loading}
+            disabled={formik.isSubmitting}
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
@@ -92,8 +105,8 @@ export default function Login() {
             variant="contained"
             color="primary"
             className={classes.submit}
-            disabled={loading}
-            onClick={loginClick}
+            disabled={formik.isSubmitting}
+            onClick={formik.handleSubmit}
           >
             Sign In
           </Button>

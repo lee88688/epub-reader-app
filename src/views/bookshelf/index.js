@@ -129,8 +129,8 @@ function BookShelfItem(props) {
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={menuClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+        // anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        // transformOrigin={{ vertical: 'top', horizontal: 'center' }}
         keepMounted
       >
         <MenuItem onClick={menuClick(BOOK_MENU_TYPE.ADD_CATEGORY, book._id)}>添加到分类</MenuItem>
