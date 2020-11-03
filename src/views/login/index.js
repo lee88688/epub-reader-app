@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
 import Link from '@material-ui/core/Link';
 import { makeStyles } from '@material-ui/core/styles';
@@ -11,6 +11,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import Cookies from 'js-cookie';
 import { login } from '../../api/user';
 
 const useStyles = makeStyles((theme) => ({
@@ -48,6 +49,7 @@ export default function Login() {
     }),
     async onSubmit({ email, password }) {
       await login({ email, password });
+      Cookies.set('isLogin', 'true', { expires: 60 * 60 * 24 });
       history.push('/bookshelf');
     }
   });
@@ -59,7 +61,7 @@ export default function Login() {
         {/*  <LockOutlinedIcon />*/}
         {/*</Avatar>*/}
         <Typography component="h1" variant="h5">
-          Sign in
+          用户登陆
         </Typography>
         <form className={classes.form} noValidate>
           <TextField
@@ -73,7 +75,7 @@ export default function Login() {
             required
             fullWidth
             name="email"
-            label="Email Address"
+            label="电子邮箱"
             autoComplete="email"
             autoFocus
             disabled={formik.isSubmitting}
@@ -89,7 +91,7 @@ export default function Login() {
             required
             fullWidth
             name="password"
-            label="Password"
+            label="密码"
             type="password"
             id="password"
             autoComplete="current-password"
@@ -108,17 +110,12 @@ export default function Login() {
             disabled={formik.isSubmitting}
             onClick={formik.handleSubmit}
           >
-            Sign In
+            登 陆
           </Button>
           <Grid container>
             <Grid item xs>
               <Link href="#" variant="body2">
                 Forgot password?
-              </Link>
-            </Grid>
-            <Grid item>
-              <Link href="#" variant="body2">
-                {'Don\'t have an account? Sign Up'}
               </Link>
             </Grid>
           </Grid>

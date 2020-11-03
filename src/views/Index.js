@@ -6,14 +6,15 @@ export default function Index() {
   const history = useHistory();
   const query = useQuery();
   const redirect = query.get('redirect');
-  if (redirect) {
-    history.replace(redirect);
-    return;
-  }
   const isLogin = Cookies.get('isLogin');
+  if (redirect && isLogin) {
+    history.replace(redirect);
+    return null;
+  }
   if (isLogin) {
     history.replace('/bookshelf');
-    return;
+    return null;
   }
   history.replace('/login');
+  return null;
 }

@@ -23,7 +23,7 @@ function App() {
       <Notifier />
       <Router>
         <Switch>
-          <Route path="/">
+          <Route exact path="/">
             <Index />
           </Route>
           <Route path="/login">
