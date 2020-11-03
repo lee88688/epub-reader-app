@@ -9,6 +9,7 @@ import Login from './views/login';
 import Bookshelf from './views/bookshelf';
 import Reader from './views/reader';
 import Notifier from './views/Notifier';
+import Index from './views/Index';
 
 function App() {
   return (
@@ -22,6 +23,9 @@ function App() {
       <Notifier />
       <Router>
         <Switch>
+          <Route path="/">
+            <Index />
+          </Route>
           <Route path="/login">
             <Login />
           </Route>
