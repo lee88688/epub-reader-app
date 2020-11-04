@@ -6,8 +6,9 @@ import HighlightEditor, { getColorsValue } from './HighlightEditor';
 import { addMark, removeMark, updateMark } from '../../api/mark';
 import { useDispatch, useSelector } from 'react-redux';
 import { getHighlightList, selectHighlightList } from './readerSlice';
+import { getElementHeading } from './index';
 
-window.EpubCFI = EpubCFI;
+// window.EpubCFI = EpubCFI;
 
 export function useReader({ opfUrl, bookId }) {
   const rendition = useRef(null);
@@ -69,12 +70,14 @@ export function useReader({ opfUrl, bookId }) {
     // so it's important to change `curEditorValue` to `curEditorValueRef`.
     rendition.current.on('selected', function(cfiRange, contents) {
       if (!epubcfi) {
-        const fn = async () => {
+        const fn = async (e) => {
           contents.document.removeEventListener('mouseup', fn);
           const color ='red';
           const content = '';
           // const cfi = epubcfi; // epubcfi will be set to null, save a copy.
-          const curValue = { color, content, epubcfi, selectedString, type: 'highlight' };
+          const title = getElementHeading(e.target);
+          console.log(title);
+          const curValue = { color, content, epubcfi, selectedString, type: 'highlight', title };
           rendition.current.annotations.highlight(
             epubcfi,
             { ...curValue },

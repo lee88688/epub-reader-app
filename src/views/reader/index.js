@@ -100,12 +100,13 @@ export default function Reader() {
   const menuClose = () => setMenuAnchorEl(null);
 
   const addBookmark = async () => {
-    const { start, end } = await rendition.current.currentLocation();
+    const { start } = await rendition.current.currentLocation();
     const range = rendition.current.getRange(start.cfi);
+    const title = getElementHeading(range.startContainer);
     menuClose();
     // console.log(range);
     // console.log(truncate(range.startContainer.textContent));
-    await addMark(id, { type: 'bookmark', selectedString: truncate(range.startContainer.textContent), epubcfi: start.cfi });
+    await addMark(id, { type: 'bookmark', selectedString: truncate(range.startContainer.textContent), epubcfi: start.cfi, title });
     dispatch(getBookmarkList(id));
   };
 
@@ -145,4 +146,23 @@ export default function Reader() {
       </div>
     </ReaderContext.Provider>
   );
+}
+
+export function getElementHeading(el) {
+  let headingText = el.textContent;
+  let curEl = el;
+  const isBody = () => curEl.tagName && curEl.tagName.toLowerCase() === 'body';
+  const hasPreviousSibling = () => !!curEl.previousElementSibling;
+  while (!isBody()) {
+    const tagName = curEl.tagName ? curEl.tagName.toLowerCase() : '';
+    if (tagName.startsWith('h')) {
+      headingText = curEl.textContent;
+      break;
+    } else if (hasPreviousSibling()) {
+      curEl = curEl.previousElementSibling;
+    } else {
+      curEl = curEl.parentElement;
+    }
+  }
+  return headingText;
 }

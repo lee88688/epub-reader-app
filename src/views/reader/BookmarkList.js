@@ -52,7 +52,7 @@ function BookmarkListItem(props) {
     <ListItem onClick={() => onClick ? onClick(props) : null} button style={{ display: 'block', padding: '0' }}>
       <Box p={1}>
         <Box display="flex" flexDirection="row">
-          <Typography className={classes.title} variant="h6">title: {title}</Typography>
+          <Typography className={classes.title} variant="h6">{title}</Typography>
           <IconButton color="inherit" onClick={menuOpen} onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
             <MoreVert />
             <Menu

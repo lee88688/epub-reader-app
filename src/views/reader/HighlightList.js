@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function HighlightListItem(props) {
-  const { id, book, epubcfi, type, color, selectedString, content, onClick } = props;
+  const { id, book, epubcfi, type, color, selectedString, content, title, onClick } = props;
   const classes = useStyles();
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const dispatch = useDispatch();
@@ -79,7 +79,7 @@ function HighlightListItem(props) {
         <Box display="flex" flexDirection="row">
           <Typography className={classes.title} variant="h6">
             <span className={classes.color} style={{ color: getColorsValue(color) }} />
-            title
+            {title}
           </Typography>
           <IconButton color="inherit" onClick={menuOpen} onMouseDown={stopRipplePropagation} onTouchStart={stopRipplePropagation}>
             <MoreVert />
@@ -110,6 +110,7 @@ HighlightListItem.propTypes = {
   color: PropTypes.string,
   selectedString: PropTypes.string,
   content: PropTypes.string,
+  title: PropTypes.string,
   onClick: PropTypes.func
 };
 
