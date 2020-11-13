@@ -13,6 +13,7 @@ export function useRendered(renderState) {
     if (renderState && !rendered) {
       setRendered(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renderState]);
 
   return [rendered, renderState];

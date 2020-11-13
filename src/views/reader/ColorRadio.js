@@ -29,10 +29,12 @@ export default function ColorRadio(props) {
 
   const checkedIcon = useMemo(() => (
     <span className={clsx(classes.icon, classes.checkedIcon)} style={{ color }} />
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [color]);
 
   const icon = useMemo(() => (
     <span className={classes.icon} style={{ color }} />
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [color]);
 
   return (

@@ -42,7 +42,6 @@ import {
   selectBooks,
   selectCategories,
   selectCategory,
-  setCategory,
   setCategoryAndGetBooks
 } from './bookshelfSlice';
 import {
@@ -241,6 +240,7 @@ function useBookList() {
         await apiDeleteBook(id);
         dispatch(getBooks());
         enqueueSnackbar('删除成功', { variant: 'success' });
+        break;
       }
       default: {
         break;
