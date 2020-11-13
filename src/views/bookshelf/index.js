@@ -353,7 +353,7 @@ function useDrawer() {
     <div>
       <List>
         <ListItem>
-          <Typography variant="h5">Lithium</Typography>
+          <Typography variant="h5">Beryllium</Typography>
         </ListItem>
         <ListItem button selected={!selectedCategory} onClick={handleCategoryClick('')}>
           <ListItemIcon><BookIcon /></ListItemIcon>
