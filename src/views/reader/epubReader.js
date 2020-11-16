@@ -59,7 +59,7 @@ export function useReader({ opfUrl, bookId }) {
       width: '100%',
       height: '100%',
       snap: true,
-      script: '/epubjs-ext/rendition-injection.js'
+      script: `${process.env.PUBLIC_URL}/epubjs-ext/rendition-injection.js`
     });
     rendition.current.display(0);
 
