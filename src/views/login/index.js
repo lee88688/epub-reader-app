@@ -49,7 +49,7 @@ export default function Login() {
     }),
     async onSubmit({ email, password }) {
       await login({ email, password });
-      Cookies.set('isLogin', 'true', { expires: 60 * 60 * 24 });
+      Cookies.set('isLogin', 'true', { expires: 1 });
       history.push('/bookshelf');
     }
   });
