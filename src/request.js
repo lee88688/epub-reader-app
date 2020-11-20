@@ -17,6 +17,10 @@ service.interceptors.response.use(
     return res;
   },
   error => {
+    store.dispatch(addSnackbar({
+      message: error.toString(),
+      options: { variant: 'error' }
+    }));
     return Promise.reject(error);
   }
 );
