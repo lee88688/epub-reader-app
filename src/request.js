@@ -1,8 +1,22 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import store from './store';
 import { addSnackbar } from './store/notifierSlice';
 
 const service = axios.create({});
+
+service.interceptors.request.use(
+  config => {
+    const csrfToken = Cookies.get('csrfToken');
+    if (csrfToken) {
+      config.headers['x-csrf-token'] = csrfToken;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
 
 service.interceptors.response.use(
   response => {
