@@ -19,7 +19,6 @@ function App() {
     history.replace('/login');
   }
 
-
   return (
     <SnackbarProvider
       maxSnack={2}
@@ -39,7 +38,7 @@ function App() {
         <Route path="/reader">
           <Reader />
         </Route>
-        <Route exact path="/">
+        <Route path="/">
           <Index />
         </Route>
       </Switch>
