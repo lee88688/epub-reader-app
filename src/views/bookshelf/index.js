@@ -218,7 +218,7 @@ function useBookList() {
   };
 
   const bookMenuSelected = async (type, id) => {
-    if (Array.isArray(currentCategories) && currentCategories.length === 0) {
+    if (type !== BOOK_MENU_TYPE.REMOVE_BOOK && Array.isArray(currentCategories) && currentCategories.length === 0) {
       enqueueSnackbar('暂无类别，请添加后重试！');
       return;
     }
