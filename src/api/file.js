@@ -38,3 +38,18 @@ export function apiDeleteBook(id) {
     method: 'DELETE'
   });
 }
+
+export function apiUpdateBookCurrent(id, current) {
+  return request({
+    url: `/api/book/current/${id}`,
+    method: 'POST',
+    data: { current }
+  });
+}
+
+export function apiGetBookCurrent(id) {
+  return request({
+    url: `/api/book/current/${id}`,
+    method: 'GET'
+  });
+}

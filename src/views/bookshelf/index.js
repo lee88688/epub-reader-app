@@ -30,7 +30,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import { apiDeleteBook, getFileUrl, uploadBook } from '../../api/file';
+import { apiDeleteBook, apiGetBookCurrent, getFileUrl, uploadBook } from '../../api/file';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVert from '@material-ui/icons/MoreVert';
@@ -207,11 +207,13 @@ function useBookList() {
   const currentCategories = categories.filter(name => category !== name);
 
   const bookClick = (id, book, content, title) => {
-    return () => {
+    return async () => {
+      const { data: cfi } = await apiGetBookCurrent(id);
       const query = new URLSearchParams();
       query.set('book', book);
       query.set('content', content);
       query.set('id', id);
+      query.set('cfi', cfi);
       query.set('title', title);
       history.push(`/reader?${query.toString()}`);
     };

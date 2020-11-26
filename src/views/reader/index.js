@@ -12,7 +12,7 @@ import makeStyles from '@material-ui/core/styles/makeStyles';
 import clsx from 'clsx';
 import { useReader } from './epubReader';
 import { useQuery } from '../../hooks';
-import { getFileUrl } from '../../api/file';
+import { apiUpdateBookCurrent, getFileUrl } from '../../api/file';
 import ReaderDrawer, { drawerWidth, viewBreakPoint } from './ReaderDrawer';
 import { getBookmarkList, getMarkList } from './readerSlice';
 import Menu from '@material-ui/core/Menu';
@@ -79,8 +79,9 @@ export default function Reader() {
   const query = useQuery();
   const id = query.get('id');
   const title = query.get('title');
+  const cfi = query.get('cfi');
   const contentUrl = getFileUrl(query.get('book'), query.get('content'));
-  const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl, bookId: id });
+  const { bookItem, nextPage, prevPage, rendition } = useReader({ opfUrl: contentUrl, bookId: id, startCfi: cfi });
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
 
   const contextValue = useMemo(() => ({
@@ -110,12 +111,18 @@ export default function Reader() {
     dispatch(getBookmarkList(id));
   };
 
+  const goBack = async () => {
+    history.goBack();
+    const { start } = await rendition.current.currentLocation();
+    await apiUpdateBookCurrent(id, start.cfi);
+  };
+
   return (
     <ReaderContext.Provider value={contextValue}>
       <div className={classes.root}>
         <AppBar position="fixed" className={classes.appBar}>
           <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={() => history.goBack()}>
+            <IconButton edge="start" color="inherit" onClick={goBack}>
               <ArrowBack />
             </IconButton>
             <Typography variant="h6" noWrap className={classes.appBarTitle}>

@@ -10,7 +10,7 @@ import { getElementHeading } from './index';
 
 // window.EpubCFI = EpubCFI;
 
-export function useReader({ opfUrl, bookId }) {
+export function useReader({ opfUrl, bookId, startCfi }) {
   const rendition = useRef(null);
   const anchorEl = useRef(null);
   const [openPopover, setOpenPopover] = useState(false);
@@ -61,7 +61,7 @@ export function useReader({ opfUrl, bookId }) {
       snap: true,
       script: `${process.env.PUBLIC_URL}/epubjs-ext/rendition-injection.js`
     });
-    rendition.current.display(0);
+    rendition.current.display(startCfi || 0);
 
     let epubcfi = '';
     let selectedString = '';
