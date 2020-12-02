@@ -1,4 +1,4 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+this project is front app of [epub reader server](https://github.com/lee88688/epub-reader-server)
 
 ## Available Scripts
 
