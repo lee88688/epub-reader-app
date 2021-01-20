@@ -257,6 +257,7 @@ function useBookList() {
     await uploadBook(file);
     dispatch(getBooks());
     enqueueSnackbar('successful upload', { variant: 'success' });
+    addInputRef.current.value = null;
   };
 
   const handleCategorySelected = name => async () => {
