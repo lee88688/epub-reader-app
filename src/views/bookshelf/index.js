@@ -34,6 +34,8 @@ import { apiDeleteBook, apiGetBookCurrent, getFileUrl, uploadBook } from '../../
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVert from '@material-ui/icons/MoreVert';
+import ExitToApp from '@material-ui/icons/ExitToApp';
+import Settings from '@material-ui/icons/Settings';
 import { useSnackbar } from 'notistack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -50,6 +52,8 @@ import {
   apiRemoveBooksFromCategory,
   apiRemoveCategory
 } from '../../api/category';
+import { logout } from '../../api/user';
+import Cookies from 'js-cookie';
 
 const BOOK_MENU_TYPE = {
   ADD_CATEGORY: 'ADD_CATEGORY',
@@ -322,6 +326,22 @@ const useDrawerStyles = makeStyles(theme => ({
   drawerPaper: {
     width: drawerWidth,
   },
+  drawerContent: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch'
+  },
+  exitListItem: {
+    color: '#F44336',
+    '&:hover': {
+      backgroundColor: 'rgba(244, 67, 54, 0.04)'
+    },
+    '& > div': {
+      color: '#F44336'
+    }
+  },
   dialogPaper: {
     minWidth: '300px'
   }
@@ -337,6 +357,7 @@ function useDrawer() {
   const selectedCategory = useSelector(selectCategory);
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
+  const history = useHistory();
 
   useEffect(() => {
     dispatch(getCategories());
@@ -350,10 +371,16 @@ function useDrawer() {
     dispatch(setCategoryAndGetBooks(name));
   };
 
+  const exitClick = async () => {
+    await logout();
+    Cookies.remove('isLogin');
+    history.push('/login');
+  };
+
   const container = window !== undefined ? () => window.document.body : undefined;
 
   const drawer = (
-    <div>
+    <div className={classes.drawerContent}>
       <List>
         <ListItem>
           <Typography variant="h5">Beryllium</Typography>
@@ -377,6 +404,17 @@ function useDrawer() {
         }}>
           <ListItemIcon><AddIcon /></ListItemIcon>
           <ListItemText primary="创建分类"/>
+        </ListItem>
+      </List>
+      <Divider />
+      <List>
+        <ListItem button>
+          <ListItemIcon><Settings /></ListItemIcon>
+          <ListItemText primary="设置"/>
+        </ListItem>
+        <ListItem button className={classes.exitListItem} onClick={exitClick}>
+          <ListItemIcon><ExitToApp /></ListItemIcon>
+          <ListItemText primary="退出登陆"/>
         </ListItem>
       </List>
     </div>
